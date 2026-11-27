@@ -1,14 +1,7 @@
 {
   "site": {
     "name": "your name",
-    "description": "A little collection of what I’m learning, thinking about, and creating.",
-    "bio": "Hello! I’m interested in mathematics, computer science, cryptography, and making things. This is a little collection of what I’m learning, thinking about, and creating.",
-    "contact": "Reach out if you’d like to grab a coffee!",
-    "email": "",
-    "portrait": "assets/portrait.svg",
-    "portraitAlt": "Illustrative placeholder for your portrait",
     "homeWritingLimit": 3,
-    "homeGalleryLimit": 5,
     "modeCategories": {
       "academic": [
         "notes",
@@ -30,6 +23,15 @@
       "github": "",
       "education": [],
       "papers": []
+    },
+    "personal": {
+      "bio": "Hello! I’m interested in mathematics, computer science, cryptography, and making things. This is a little collection of what I’m learning, thinking about, and creating.",
+      "description": "A little collection of what I’m learning, thinking about, and creating.",
+      "portrait": "assets/portrait.svg",
+      "portraitAlt": "Illustrative placeholder for your portrait",
+      "email": "",
+      "contact": "Reach out if you’d like to grab a coffee!",
+      "homeGalleryLimit": 5
     }
   },
   "config": {

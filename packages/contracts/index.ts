@@ -10,8 +10,10 @@ export interface Config {categories:Category[];fields:Field[]}
 export interface Views {home:View;writing:View;article:View;byCategory:Record<string,View>}
 export interface Education {institution:string;degree?:string;dates?:string}
 export interface Paper {id:string;title:string;authors?:string;venue?:string;year?:number;summary?:string;pdf?:string;code?:string;url?:string;bibtex?:string}
-export interface AcademicProfile {bio:string;description:string;portrait:string;portraitAlt:string;email?:string;cv?:string;github?:string;education:Education[];papers:Paper[]}
-export interface Site {academic:AcademicProfile;modeCategories:Record<Mode,string[]>;name:string;description:string;bio:string;contact:string;email:string;portrait:string;portraitAlt:string;homeWritingLimit:number;homeGalleryLimit:number}
+export interface Profile {bio:string;description:string;portrait:string;portraitAlt:string;email?:string}
+export interface AcademicProfile extends Profile {cv?:string;github?:string;education:Education[];papers:Paper[]}
+export interface PersonalProfile extends Profile {contact:string;homeGalleryLimit:number}
+export interface Site {name:string;homeWritingLimit:number;modeCategories:Record<Mode,string[]>;academic:AcademicProfile;personal:PersonalProfile}
 export interface Data {site:Site;config:Config;views:Views;posts:Post[];gallery:GalleryItem[]}
 export interface Repository {load():Promise<Data>}
 export interface Property {id:string;label:string;value:string;type:FieldType;empty:boolean}

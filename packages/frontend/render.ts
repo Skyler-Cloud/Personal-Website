@@ -22,12 +22,12 @@ export function renderPages(d:Data,options:RenderOptions):Page[]{
   const {site}=d, gallery=galleryItems(d), all=visiblePosts(d);
   const pages:Page[]=[];
   for(const mode of ['academic','personal'] as const){
-    const academic=mode==='academic', profile=academic?site.academic:site;
+    const academic=mode==='academic', profile=site[mode];
     const o:RenderOptions={...options,mode}, posts=modePosts(d,mode), categories=modeCategories(d,mode);
     const page=(path:string,title:string,description:string,html:string)=>{const p:Page={path,title,description,html,mode};pages.push(p);return p;};
-    const homeGallery=[...gallery.filter(g=>g.featured),...gallery.filter(g=>!g.featured)].slice(0,site.homeGalleryLimit);
+    const homeGallery=[...gallery.filter(g=>g.featured),...gallery.filter(g=>!g.featured)].slice(0,site.personal.homeGalleryLimit);
     const a=site.academic;
-    const contact=academic?[a.email?'<a href="mailto:'+e(a.email)+'">Email</a>':'',a.cv?external(o,a.cv,'CV'):'',a.github?external(o,a.github,'GitHub'):''].filter(Boolean).join(' · '):e(site.contact)+(site.email?' <a href="mailto:'+e(site.email)+'">'+e(site.email)+'</a>':'');
+    const contact=academic?[a.email?'<a href="mailto:'+e(a.email)+'">Email</a>':'',a.cv?external(o,a.cv,'CV'):'',a.github?external(o,a.github,'GitHub'):''].filter(Boolean).join(' · '):e(site.personal.contact)+(site.personal.email?' <a href="mailto:'+e(site.personal.email)+'">'+e(site.personal.email)+'</a>':'');
     const education=academic&&a.education.length?'<section class="home-section"><div class="section-head"><h2>Education</h2></div>'+a.education.map(ed=>'<div class="education-entry"><h3>'+e(ed.institution)+'</h3>'+([ed.degree,ed.dates].filter(Boolean).length?'<p class="meta">'+[ed.degree,ed.dates].filter(Boolean).map(e).join(' · ')+'</p>':'')+'</div>').join('')+'</section>':'';
     const featured=academic?'<section class="home-section">'+section(o,'Papers & preprints',route(o,'papers'),'All papers →','gallery-head')+'<div class="writing-list">'+(a.papers.slice(0,site.homeWritingLimit).map(p=>paperEntry(p,o)).join('')||'<p>No papers listed yet.</p>')+'</div></section>':'<section class="home-section">'+section(o,'Gallery',route(o,'gallery'),'View gallery →','gallery-head')+'<div class="gallery-strip" aria-label="Selected artwork and photos" tabindex="0">'+(homeGallery.map(g=>thumb(g,o,true)).join('')||'<p>No items yet.</p>')+'</div></section>';
     page(mode,site.name,profile.description,modeNav(o)+'<header class="masthead"><h1>'+e(site.name)+'</h1></header><div class="intro"><img class="portrait" src="'+asset(o,profile.portrait)+'" alt="'+e(profile.portraitAlt)+'" width="144" height="180"><div class="bio"><p>'+e(profile.bio)+'</p>'+(contact?'<p class="contact">'+contact+'</p>':'')+'</div></div>'+education+featured+'<section class="home-section">'+section(o,academic?'Technical writing':'Writing',route(o,'writing'),'All writing →')+'<div class="writing-list">'+(posts.slice(0,site.homeWritingLimit).map(p=>postEntry(p,d,o,d.views.home)).join('')||'<p>No published writing yet.</p>')+'</div></section>');

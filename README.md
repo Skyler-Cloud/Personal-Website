@@ -19,7 +19,7 @@ Production uses locally bundled Play (bold) and Nunito, Markdown-It, and KaTeX. 
 
 ## Content workflow
 
-- `content/site.json`: shared name and display limits, Personal bio/portrait/contact, independent Academic bio/portrait/contact, education, publications, and default category assignments.
+- `content/site.json`: shared name, writing limit and category assignments, plus sibling `academic` and `personal` profiles. Each owns its bio, description, portrait, alt text and email. Academic also owns education, publications, CV and GitHub; Personal owns its contact message and gallery limit.
 - `content/writing/`: one Markdown file per article. The filename is a stable URL slug. JSON frontmatter (also valid YAML) is used in the examples; the production build accepts YAML as well.
 - `content/gallery/`: one JSON record per artwork/photo, with image, alt text, title, medium and date. Put image files under `apps/web/public/assets/`. Actual artwork is displayed uncropped on its detail page.
 - `content/properties.json`: writing categories and typed custom-property definitions.
@@ -51,7 +51,7 @@ For an example custom field, add `{"id":"author","label":"Author","type":"text",
 
 The root displays Academic; `/academic/` and `/personal/` are stable links. Each has a writing index and article routes. Academic adds papers and education; Personal retains the gallery. Earlier `/writing/`, `/writing/<slug>/` and `/gallery/` URLs still work, with scoped canonical URLs. The mode switch uses ordinary links (no JavaScript or stored preference required). On writing pages it keeps the corresponding writing section or article where available.
 
-By default, notes appear in both modes, technical writing in Academic, personal posts and reviews in Personal. Set frontmatter `"modes": ["academic"]` or `["personal"]` or both to override. Categories and display properties are still independently configurable. Put the second portrait in `apps/web/public/assets/` and set `academic.portrait` separately. Academic contact links are rendered only when configured; CV can be an HTTP(S) URL or an `assets/...` file. Education is an array of institution/degree/dates objects, papers an array of id/title/authors/venue/year/summary/pdf/code/url/bibtex objects, with only institution or id/title required. Unconfigured links are omitted.
+By default, notes appear in both modes, technical writing in Academic, personal posts and reviews in Personal. Set frontmatter `"modes": ["academic"]` or `["personal"]` or both to override. Categories and display properties are still independently configurable. Put both portraits in `apps/web/public/assets/` and set `academic.portrait` and `personal.portrait` independently. Academic contact links are rendered only when configured; CV can be an HTTP(S) URL or an `assets/...` file. Education is an array of institution/degree/dates objects, papers an array of id/title/authors/venue/year/summary/pdf/code/url/bibtex objects, with only institution or id/title required. Unconfigured links are omitted.
 
 ## Navigation performance
 
