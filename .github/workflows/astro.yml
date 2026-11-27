@@ -4,21 +4,29 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Request preview refresh"]
+    types: [completed]
+    branches: [preview]
 
 permissions:
   contents: read
 
 concurrency:
-  group: website-${{ github.event.pull_request.number || github.ref }}
+  group: website-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
   cancel-in-progress: false
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'preview' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
       pages: read
+    outputs:
+      base_path: ${{ steps.pages.outputs.base_path }}
+      origin: ${{ steps.pages.outputs.origin }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,15 +54,88 @@ jobs:
         run: |
           npm run build
           npm run check:build
-      - name: Upload verified Pages build
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
         with:
+          name: production-build
           path: apps/web/dist
+          if-no-files-found: error
+          retention-days: 7
 
-  deploy:
+  preview:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/heads/preview
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
+      - run: npm test
+      - name: Build preview under its own base path
+        env:
+          SITE_URL: ${{ needs.build.outputs.origin || 'https://skyler-cloud.github.io' }}
+          BASE_PATH: ${{ needs.build.outputs.base_path || '/Personal-Website/' }}
+        run: |
+          export BASE_PATH="${BASE_PATH%/}/preview/"
+          npm run build
+          npm run check:build
+      - name: Upload preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-build
+          path: apps/web/dist
+          if-no-files-found: error
+          retention-days: 7
+
+  assemble:
+    if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.build.result == 'success'
+    needs: [build, preview]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: site
+      - name: Reserve preview path
+        run: |
+          test -f site/index.html
+          test ! -e site/preview
+      - uses: actions/download-artifact@v4
+        if: needs.preview.result == 'success'
+        with:
+          name: preview-build
+          path: preview-site
+      - name: Assemble preview and discourage indexing
+        if: needs.preview.result == 'success'
+        run: |
+          test -f preview-site/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          for path in Path('preview-site').rglob('*.html'):
+              text = path.read_text(encoding='utf-8')
+              text = text.replace('<head>', '<head><meta name="robots" content="noindex, nofollow">', 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+          mv preview-site site/preview
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.assemble.result == 'success'
+    needs: assemble
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
