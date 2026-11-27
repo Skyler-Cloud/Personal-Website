@@ -7,14 +7,18 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
-base = "/" + os.environ.get("BASE_PATH", "/Personal-Website/").strip("/") + "/"
+base = "/" + os.environ.get("BASE_PATH", "/Personal-Website/").strip("/")
+if base != "/":
+    base += "/"
 dist = Path("apps/web/dist").resolve()
 
 with tempfile.TemporaryDirectory() as temp:
-    mount = Path(temp) / base.strip("/")
-    mount.parent.mkdir(parents=True, exist_ok=True)
-    mount.symlink_to(dist, target_is_directory=True)
-    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(SimpleHTTPRequestHandler, directory=temp))
+    directory = str(dist) if base == "/" else temp
+    if base != "/":
+        mount = Path(temp) / base.strip("/")
+        mount.parent.mkdir(parents=True, exist_ok=True)
+        mount.symlink_to(dist, target_is_directory=True)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(SimpleHTTPRequestHandler, directory=directory))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     url = f"http://127.0.0.1:{server.server_port}{base}"

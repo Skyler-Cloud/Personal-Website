@@ -49,7 +49,7 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Verify Pages build
         env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path || '/Personal-Website/' }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path || (github.event.repository.name == format('{0}.github.io', github.repository_owner) && '/' || format('/{0}/', github.event.repository.name)) }}
           SITE_URL: ${{ steps.pages.outputs.origin || 'https://skyler-cloud.github.io' }}
         run: |
           npm run build
@@ -66,7 +66,7 @@ jobs:
       - name: Browser navigation regression tests
         if: github.event_name != 'workflow_run'
         env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path || '/Personal-Website/' }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path || (github.event.repository.name == format('{0}.github.io', github.repository_owner) && '/' || format('/{0}/', github.event.repository.name)) }}
         run: python scripts/browser-navigation-check.py
       - name: Upload production build
         uses: actions/upload-artifact@v4
@@ -97,7 +97,7 @@ jobs:
       - name: Build preview under its own base path
         env:
           SITE_URL: ${{ needs.build.outputs.origin || 'https://skyler-cloud.github.io' }}
-          BASE_PATH: ${{ needs.build.outputs.base_path || '/Personal-Website/' }}
+          BASE_PATH: ${{ needs.build.outputs.base_path || (github.event.repository.name == format('{0}.github.io', github.repository_owner) && '/' || format('/{0}/', github.event.repository.name)) }}
         run: |
           export BASE_PATH="${BASE_PATH%/}/preview/"
           npm run build
