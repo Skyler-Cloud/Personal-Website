@@ -72,7 +72,7 @@ The frontend obtains a validated content snapshot via `Repository.load()`. It do
 
 The site uses GitHub Pages and GitHub Actions, with no separate hosting service. Production URL: https://skyler-cloud.github.io/Personal-Website/.
 
-The workflow checks TypeScript, runs unit tests, builds and checks the root site, then builds and checks the actual Pages subdirectory. Only successful builds on the main branch (not pull requests) may deploy. Pull requests can be used to test experimental changes without replacing the public site; a separate live preview deployment for each branch is not configured yet.
+The workflow checks TypeScript, runs unit tests, builds and checks the root site, then builds and checks the actual Pages subdirectory. Only successful builds on the main branch (not pull requests) may deploy. Pull requests can be used to test experimental changes without replacing the public site; one explicitly selected development branch is hosted under /preview/.
 
 The Astro project lives in apps/web; its build output is apps/web/dist. On main the workflow gets the origin and base path from GitHub Pages. For a local simulation of the hosted path, set BASE_PATH=/Personal-Website/ and SITE_URL=https://skyler-cloud.github.io when running npm run build, and the same BASE_PATH when running npm run check:build.
 
@@ -83,4 +83,8 @@ The repository is public. Draft exclusion applies to the generated site, not the
 - The initial GitHub verification runs passed type checking, unit tests, production builds and local link/asset checks at the root and a test subdirectory. The committed lockfile was recovered from the first successful run.
 - The offline HTML preview can be rebuilt with node --experimental-strip-types scripts/build-preview.mjs after installing Python 3 and mistune. This is not the production build.
 - The current art and portrait are illustrative placeholder SVGs, not exported Figma artwork. Academic typography is provisional; the actual photos, CV, education, and publications are not populated.
-- The private visual Content Studio, standalone interactive artwork, Figma-to-CSS synchronization, full accessibility audit, Safari validation, image optimization pipeline, search, RSS, sitemap and separate live branch previews are not implemented yet.
+- The private visual Content Studio, standalone interactive artwork, Figma-to-CSS synchronization, full accessibility audit, Safari validation, image optimization pipeline, search, RSS, sitemap and separate per-PR preview URLs are not implemented yet.
+
+## Hosted development preview
+
+The public site has one reserved development path: https://skyler-cloud.github.io/Personal-Website/preview/. The `preview` branch selects the code to review. Push only trusted, owner-approved development commits there; fork pull requests are not automatically published. Updating that branch triggers a refresh of the single Pages deployment. Production is always built from main, and preview is built in a separate read-only job using the /preview/ base path. A manual run of **Verify and deploy website** on main also refreshes both. Preview content is public, with noindex metadata (not access control). If the preview build fails, production may still deploy without the preview directory. The reserved preview path must not be used for production content. For independent feature review, keep a feature PR open, update the preview branch to its reviewed head, and merge only after approval. No separate hosting account is required.
