@@ -61,7 +61,14 @@ with tempfile.TemporaryDirectory() as temp:
                     navigate("Personal", "personal/writing/", page.get_by_role("navigation", name="Website section"))
                     expect(page.locator("html")).to_have_attribute("data-mode", "personal")
                     expect(page.locator("link[href$='vendor/katex/katex.min.css']")).to_have_count(0)
-                    assert not errors, errors
+                    # WebKit rejects ViewTransition.ready when Astro deliberately calls
+                    # skipTransition() for reduced motion. Navigation has already been
+                    # asserted above; reject every other browser error.
+                    expected_abort = "AbortError: Skipping view transition because skipTransition() was called."
+                    unexpected = [e for e in errors if not (engine.name == "webkit" and e == expected_abort)]
+                    if len(unexpected) != len(errors):
+                        print("WebKit reported the expected reduced-motion transition abort")
+                    assert not unexpected, unexpected
                     page.close()
                     plain = browser.new_page(java_script_enabled=False)
                     plain.goto(url)
