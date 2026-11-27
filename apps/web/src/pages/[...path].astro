@@ -3,7 +3,7 @@ import '@fontsource/play/700.css';
 import '@fontsource/nunito/400.css';
 import '@fontsource/nunito/600.css';
 import '@fontsource/nunito/700.css';
-import 'katex/dist/katex.min.css';
+import {ClientRouter} from 'astro:transitions';
 import {existsSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -27,7 +27,8 @@ export async function getStaticPaths(){
   return renderPages(data,{base,markdown:s=>md.render(s)}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
 }
 const {page,site,base,tokens:css}=Astro.props;
+const hasMath=/<span\s+class="katex(?:\s|")/.test(page.html);
 const title=page.path?`${page.title} · ${site.name}`:site.name;
 ---
 <!doctype html>
-<html lang="en" data-mode={page.mode}><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>{title}</title><meta name="description" content={page.description}/><style is:inline set:html={css}></style><link rel="canonical" href={Astro.site ? new URL(base+(page.canonicalPath??page.path)+(page.canonicalPath??page.path?'/':''),Astro.site).href : undefined}/><link rel="stylesheet" href={base+'styles/site.css'}/></head><body><a class="skip-link" href="#main">Skip to content</a><main id="main"><Fragment set:html={page.html}/><Fragment set:html={renderFooter({base,mode:page.mode,markdown:s=>s})}/></main><script is:inline src={base+'scripts/site.js'}></script></body></html>
+<html lang="en" data-mode={page.mode} transition:animate="none"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>{title}</title><meta name="description" content={page.description}/><style is:inline set:html={css}></style><link rel="canonical" href={Astro.site ? new URL(base+(page.canonicalPath??page.path)+(page.canonicalPath??page.path?'/':''),Astro.site).href : undefined}/><link rel="stylesheet" href={base+'styles/site.css'}/>{hasMath && <link rel="stylesheet" href={base+'vendor/katex/katex.min.css'}/>}<ClientRouter fallback="swap"/></head><body><a class="skip-link" href="#main">Skip to content</a><main id="main"><Fragment set:html={page.html}/><Fragment set:html={renderFooter({base,mode:page.mode,markdown:s=>s})}/></main><script is:inline src={base+'scripts/site.js'}></script></body></html>

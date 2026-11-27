@@ -53,6 +53,10 @@ The root displays Academic; `/academic/` and `/personal/` are stable links. Each
 
 By default, notes appear in both modes, technical writing in Academic, personal posts and reviews in Personal. Set frontmatter `"modes": ["academic"]` or `["personal"]` or both to override. Categories and display properties are still independently configurable. Put the second portrait in `apps/web/public/assets/` and set `academic.portrait` separately. Academic contact links are rendered only when configured; CV can be an HTTP(S) URL or an `assets/...` file. Education is an array of institution/degree/dates objects, papers an array of id/title/authors/venue/year/summary/pdf/code/url/bibtex objects, with only institution or id/title required. Unconfigured links are omitted.
 
+## Navigation performance
+
+Astro's ClientRouter provides client-side navigation without a backend, with normal links as fallback. Major navigation links prefetch when visible; article/gallery links use hover/touch intent. The router swaps the page's HTML attributes (including the mode), and a single delegated filter listener remains active across navigation. Animations are disabled to minimize visual delay. KaTeX CSS is linked only when rendered math exists; its pinned stylesheet and fonts are copied locally by the prebuild/predev script. The standalone HTML preview is not a test of Astro navigation.
+
 ## Architecture
 
 ```

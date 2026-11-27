@@ -31,3 +31,14 @@ for(const mode of ['academic','personal']){
   assert.ok(html.includes('aria-current="true"'));
   assert.ok(!html.includes('theme-toggle'));
 }
+
+for(const file of files.filter(p=>p.endsWith('.html'))){
+  const html=await readFile(file,'utf8');
+  const hasMath=/<span\s+class="katex(?:\s|")/.test(html);
+  assert.equal(html.includes('vendor/katex/katex.min.css'),hasMath,'Math CSS should only appear on math pages: '+file);
+  assert.ok(html.includes('astro-view-transitions-enabled'),'Missing client router: '+file);
+}
+const mathCss=await readFile(join(root,'vendor/katex/katex.min.css'),'utf8');
+for(const m of mathCss.matchAll(/url\(["']?(fonts\/[^)"']+)["']?\)/g))assert.ok(await exists(join(root,'vendor/katex',m[1])),'Missing KaTeX font: '+m[1]);
+const academicHome=await readFile(join(root,'academic/index.html'),'utf8');
+assert.match(academicHome,/data-astro-prefetch="viewport"/);

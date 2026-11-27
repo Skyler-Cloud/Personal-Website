@@ -11,7 +11,9 @@
     "preview": "astro preview --root apps/web",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "check": "tsc --noEmit",
-    "check:build": "node --experimental-strip-types scripts/check-build.mjs"
+    "check:build": "node --experimental-strip-types scripts/check-build.mjs",
+    "prebuild": "node scripts/prepare-math-assets.mjs",
+    "predev": "node scripts/prepare-math-assets.mjs"
   },
   "dependencies": {
     "astro": "^5.0.0",
