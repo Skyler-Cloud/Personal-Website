@@ -74,11 +74,11 @@ The frontend obtains a validated content snapshot via `Repository.load()`. It do
 
 ## Hosting and development
 
-The site uses GitHub Pages and GitHub Actions, with no separate hosting service. Production URL: https://skyler-cloud.github.io/Personal-Website/.
+The site uses GitHub Pages and GitHub Actions, with no separate hosting service. Production URL: https://skyler-cloud.github.io/.
 
 The workflow checks TypeScript, runs unit tests, builds and checks the root site, then builds and checks the actual Pages subdirectory. Only successful builds on the main branch (not pull requests) may deploy. Pull requests can be used to test experimental changes without replacing the public site; one explicitly selected development branch is hosted under /preview/.
 
-The Astro project lives in apps/web; its build output is apps/web/dist. On main the workflow gets the origin and base path from GitHub Pages. For a local simulation of the hosted path, set BASE_PATH=/Personal-Website/ and SITE_URL=https://skyler-cloud.github.io when running npm run build, and the same BASE_PATH when running npm run check:build.
+The Astro project lives in apps/web; its build output is apps/web/dist. On main the workflow gets the origin and base path from GitHub Pages. For a local simulation of the hosted path, set BASE_PATH=/ and SITE_URL=https://skyler-cloud.github.io when running npm run build, and the same BASE_PATH when running npm run check:build.
 
 The repository is public. Draft exclusion applies to the generated site, not the source repository or commit history. Never commit private drafts, secrets, or confidential research. No broad reuse license has been granted.
 
@@ -91,8 +91,8 @@ The repository is public. Draft exclusion applies to the generated site, not the
 
 ## Hosted development preview
 
-The public site has one reserved development path: https://skyler-cloud.github.io/Personal-Website/preview/. The `preview` branch selects the code to review. Push only trusted, owner-approved development commits there; fork pull requests are not automatically published. Updating that branch triggers a refresh of the single Pages deployment. Production is always built from main, and preview is built in a separate read-only job using the /preview/ base path. A manual run of **Verify and deploy website** on main also refreshes both. Preview content is public, with noindex metadata (not access control). If the preview build fails, production may still deploy without the preview directory. The reserved preview path must not be used for production content. For independent feature review, keep a feature PR open, update the preview branch to its reviewed head, and merge only after approval. No separate hosting account is required.
+The public site has one reserved development path: https://skyler-cloud.github.io/preview/. The `preview` branch selects the code to review. Push only trusted, owner-approved development commits there; fork pull requests are not automatically published. Updating that branch triggers a refresh of the single Pages deployment. Production is always built from main, and preview is built in a separate read-only job using the /preview/ base path. A manual run of **Verify and deploy website** on main also refreshes both. Preview content is public, with noindex metadata (not access control). If the preview build fails, production may still deploy without the preview directory. The reserved preview path must not be used for production content. For independent feature review, keep a feature PR open, update the preview branch to its reviewed head, and merge only after approval. No separate hosting account is required.
 
 ## Root-domain migration
 
-The deployment workflow derives the base path from GitHub Pages configuration or the repository name. Renaming the repository to `skyler-cloud.github.io` switches the public base to `/`, with the existing Academic homepage as the root and Personal at `/personal/`. The hosted development preview moves to `/preview/`. After renaming, confirm GitHub Actions is the Pages source and manually run Verify and deploy website on main if needed. Existing project-site URLs are not automatically redirected by GitHub Pages.
+The deployment workflow derives the base path from GitHub Pages configuration or the repository name. Renaming the repository to `skyler-cloud.github.io` switches the public base to `/`, with the existing Academic homepage as the root and Personal at `/personal/`. The hosted development preview is at `/preview/`. After renaming, confirm GitHub Actions is the Pages source and manually run Verify and deploy website on main if needed. Existing project-site URLs are not automatically redirected by GitHub Pages.
