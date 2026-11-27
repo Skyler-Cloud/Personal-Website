@@ -1,19 +1,19 @@
 # Personal website — first implementation
 
-A personal portfolio and publishing site based on the editable Figma design. The public site is static; no database, server, or credentials are required. All sample articles, ratings, artwork and profile details are placeholders. Replace them before publishing.
+A personal portfolio and publishing site based on the editable Figma design. The public site is static; no database, server, or credentials are required. All sample articles, ratings, artwork and profile details are placeholders. The initial public deployment is a demonstration, not the finished personal portfolio.
 
 ## Run locally
 
 Requires Node.js 22.12 or newer. From the repository root:
 
 ```sh
-npm install
+npm ci
 npm run check
 npm test
 npm run dev
 ```
 
-Open the URL printed by Astro. `npm run build` generates the production site in `apps/web/dist/`. `npm run preview` serves that build. Commit the generated `package-lock.json` after the initial successful install, then use `npm ci` for subsequent reproducible builds.
+Open the URL printed by Astro. `npm run build` generates the production site in `apps/web/dist/`. `npm run preview` serves that build. The committed `package-lock.json` pins dependencies. Use `npm ci` for reproducible builds; use `npm install` only when intentionally changing dependencies.
 
 Production uses locally bundled Play (bold) and Nunito, Markdown-It, and KaTeX. Native CJK/system fallback fonts support Chinese. The included standalone HTML preview is a different, offline-friendly test path: fonts use a Google Fonts stylesheet if reachable and math is not typeset with KaTeX in that preview. It is not the deployable Astro build.
 
@@ -62,21 +62,19 @@ tests/                 Framework-independent automated tests
 
 The frontend obtains a validated content snapshot via `Repository.load()`. It does not inspect filenames or parse frontmatter. Storage depends on contracts/core, not frontend. The frontend has a small Markdown-rendering adapter supplied by its host. The initial presentation renderer returns HTML strings so the static preview and Astro use the same code; future redesigns may replace it with native Astro/Svelte components without rewriting content or core. HTML escaping is centralized; Markdown disables raw HTML. The current design is a static build-time interface, not a network API. If a private editor needs a server later, it can implement a separate authenticated write API.
 
-## Deployment (not performed yet)
+## Hosting and development
 
-Create a GitHub repository, push this source tree, and choose a static hosting service. The included GitHub Actions workflow builds and checks the project but deliberately does not publish it automatically. For Cloudflare Pages, set the build command to `npm run build` and output directory to `apps/web/dist`. For GitHub Pages project hosting, build with `BASE_PATH=/your-repository/` and configure Pages to publish the generated artifact. For a custom domain, use `BASE_PATH=/` and set `SITE_URL` to the public origin.
+The site uses GitHub Pages and GitHub Actions, with no separate hosting service. Production URL: https://skyler-cloud.github.io/Personal-Website/.
 
-## Verification and current limitations
+The workflow checks TypeScript, runs unit tests, builds and checks the root site, then builds and checks the actual Pages subdirectory. Only successful builds on the main branch (not pull requests) may deploy. Pull requests can be used to test experimental changes without replacing the public site; a separate live preview deployment for each branch is not configured yet.
 
-- Core automated tests cover draft exclusion, optional fields, zero ratings, custom field configuration, validation, and generated routes.
-- Offline HTML preview can be rebuilt with `node --experimental-strip-types scripts/build-preview.mjs` after installing Python 3 and `mistune`.
-- The Figma Education plan is confirmed. Latest design context was retrieved for mobile home, desktop home, gallery, writing, review and article. Asset downloads were blocked by DNS; the existing illustrative placeholder SVGs are retained, not exact exported Figma assets. Production dependencies could not be installed in the authoring environment, so the Astro build and TypeScript check must be verified after `npm install`. No lockfile is supplied yet.
-- The private visual Content Studio, Figma-to-CSS synchronization, full accessibility audit, Safari validation, image optimization pipeline, search, RSS and sitemap are not implemented in this first version. Configurable views work through JSON files. Static preview is for exploration, not production hosting.
+The Astro project lives in apps/web; its build output is apps/web/dist. On main the workflow gets the origin and base path from GitHub Pages. For a local simulation of the hosted path, set BASE_PATH=/Personal-Website/ and SITE_URL=https://skyler-cloud.github.io when running npm run build, and the same BASE_PATH when running npm run check:build.
 
-## Verification and free preview hosting (v0.1.1)
+The repository is public. Draft exclusion applies to the generated site, not the source repository or commit history. Never commit private drafts, secrets, or confidential research. No broad reuse license has been granted.
 
-The verification workflow runs on pushes, pull requests, and manual dispatch. It checks types, runs fixture-based unit tests (adding real content does not invalidate sample counts), builds Astro, and checks generated routes, draft exclusion, local links/assets and KaTeX rendering. It also repeats the build for a non-root hosting path. On the first run, download `dependency-lockfile` from the workflow artifacts and commit `package-lock.json`; later runs use `npm ci`. The CI build has not yet been executed because this environment cannot access npm. The actual result must be checked in GitHub Actions.
+## Verification and limitations
 
-Recommended preview hosting: create a **private** GitHub repository called `personal-website`, push the contents of this folder (including `.github`), and connect it to Cloudflare Pages using Git integration. Use production branch `main`, root directory the repository root, build command `npm run build`, output directory `apps/web/dist`, and environment variable `NODE_VERSION=22` (or a current 22.x version). Keep `BASE_PATH=/` (default). The Pages free tier provides a `pages.dev` address and branch previews. Preview URLs are publicly reachable unless access controls are configured; do not publish private information or confidential research. GitHub private Actions runs use the account's included minutes/storage; set a zero spending limit or avoid enabling paid overages. GitHub Pages is an alternative for a public repository, but is not configured here. No custom domain purchase is necessary.
-
-Local verification performed in this revision: 9 unit tests passed and the independent TypeScript packages/tests passed using the environment's installed TypeScript and Node types. Astro dependency installation, production output, exact fonts and KaTeX in the site itself remain to be verified on GitHub.
+- The initial GitHub verification runs passed type checking, unit tests, production builds and local link/asset checks at the root and a test subdirectory. The committed lockfile was recovered from the first successful run.
+- The offline HTML preview can be rebuilt with node --experimental-strip-types scripts/build-preview.mjs after installing Python 3 and mistune. This is not the production build.
+- The current art and portrait are illustrative placeholder SVGs, not exported Figma artwork. Dark mode is an initial interpretation rather than an approved Figma design.
+- The private visual Content Studio, standalone interactive artwork, Figma-to-CSS synchronization, full accessibility audit, Safari validation, image optimization pipeline, search, RSS, sitemap and separate live branch previews are not implemented yet.

@@ -6,4 +6,4 @@
 }
 ---
 
-This is private to your source repository. It is not generated into the public site.
+This sample is excluded from the generated site, but remains visible in the public source repository.

@@ -1,46 +1,69 @@
-name: Bootstrap verified dependency lockfile
+name: Verify and deploy website
 on:
   push:
     branches: [main]
-    paths: [.github/workflows/astro.yml]
+  pull_request:
   workflow_dispatch:
+
 permissions:
-  contents: write
-  actions: read
+  contents: read
+
+concurrency:
+  group: website-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  bootstrap:
-    if: github.ref == 'refs/heads/main'
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: read
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
-      - name: Verify checkout and check for existing lock
-        id: check
-        env:
-          EXPECTED: ${{ github.sha }}
-        run: |
-          test "$(git rev-parse HEAD)" = "$EXPECTED"
-          if test -f package-lock.json; then
-            echo "needed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Recover exact lockfile from successful verification
-        if: steps.check.outputs.needed == 'true'
-        uses: actions/download-artifact@v4
+          persist-credentials: false
+      - uses: actions/setup-node@v4
         with:
-          name: dependency-lockfile
-          run-id: 46069452121
-          github-token: ${{ github.token }}
-          path: .
-      - name: Commit only the verified lockfile
-        if: steps.check.outputs.needed == 'true'
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
+      - run: npm test
+      - name: Verify root hosting
         run: |
-          node -e 'const p=require("./package.json"), l=require("./package-lock.json"); for(const k of ["dependencies","devDependencies","engines"]){ const a=p[k], b=l.packages[""][k]; if(JSON.stringify(Object.entries(a).sort())!==JSON.stringify(Object.entries(b).sort())) throw Error("Lockfile manifest mismatch: "+k); }'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- package-lock.json
-          git commit -m "Pin dependencies from verified Astro build"
-          git push origin HEAD:main
+          npm run build
+          npm run check:build
+      - name: Read production Pages configuration
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Verify Pages build
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path || '/Personal-Website/' }}
+          SITE_URL: ${{ steps.pages.outputs.origin || 'https://skyler-cloud.github.io' }}
+        run: |
+          npm run build
+          npm run check:build
+      - name: Upload verified Pages build
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy verified artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
