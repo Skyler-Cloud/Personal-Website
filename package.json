@@ -1,0 +1,30 @@
+{
+  "name": "personal-website",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "astro dev --root apps/web",
+    "build": "astro build --root apps/web",
+    "preview": "astro preview --root apps/web",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "check": "tsc --noEmit",
+    "check:build": "node --experimental-strip-types scripts/check-build.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-texmath": "^1.0.0",
+    "katex": "^0.16.22",
+    "yaml": "^2.8.0",
+    "@fontsource/play": "^5.2.0",
+    "@fontsource/nunito": "^5.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0",
+    "@types/markdown-it": "^14.1.0"
+  }
+}

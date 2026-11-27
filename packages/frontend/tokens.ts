@@ -1,0 +1,2 @@
+import {readFileSync} from 'node:fs';
+export function tokenCSS(root:URL){const t=JSON.parse(readFileSync(root,'utf8'));const vars=(o:Record<string,string>)=>Object.entries(o).map(([k,v])=>{if(!/^[a-z-]+$/.test(k)||!/^#[0-9a-f]{6}$/i.test(v))throw Error('Invalid design token '+k);return '--'+k+':'+v+';'}).join('');const font=(s:string)=>{if(!/^[\w -]+$/.test(s))throw Error('Invalid font name');return JSON.stringify(s)};return ':root{'+vars(t.light)+'--font-heading:'+font(t.fonts.heading)+';--font-body:'+font(t.fonts.body)+';}html[data-theme=dark]{'+vars(t.dark)+'}'}

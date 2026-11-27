@@ -1,0 +1,266 @@
+{
+  "site": {
+    "name": "your name",
+    "description": "A little collection of what I’m learning, thinking about, and creating.",
+    "bio": "Hello! I’m interested in mathematics, computer science, cryptography, and making things. This is a little collection of what I’m learning, thinking about, and creating.",
+    "contact": "Reach out if you’d like to grab a coffee!",
+    "email": "",
+    "portrait": "assets/portrait.svg",
+    "portraitAlt": "Illustrative placeholder for your portrait",
+    "homeWritingLimit": 3,
+    "homeGalleryLimit": 5
+  },
+  "config": {
+    "categories": [
+      {
+        "id": "notes",
+        "label": "Notes"
+      },
+      {
+        "id": "technical",
+        "label": "Technical"
+      },
+      {
+        "id": "personal",
+        "label": "Personal"
+      },
+      {
+        "id": "review",
+        "label": "Reviews"
+      }
+    ],
+    "fields": [
+      {
+        "id": "date",
+        "label": "Date posted",
+        "type": "date"
+      },
+      {
+        "id": "type",
+        "label": "Writing type",
+        "type": "text"
+      },
+      {
+        "id": "summary",
+        "label": "Short summary",
+        "type": "text"
+      },
+      {
+        "id": "rating",
+        "label": "Rating",
+        "type": "number",
+        "min": 0,
+        "max": 5,
+        "suffix": " / 5"
+      },
+      {
+        "id": "tags",
+        "label": "Tags",
+        "type": "list"
+      },
+      {
+        "id": "readingTime",
+        "label": "Reading time",
+        "type": "number",
+        "suffix": " min"
+      },
+      {
+        "id": "updated",
+        "label": "Updated",
+        "type": "date"
+      },
+      {
+        "id": "workUrl",
+        "label": "Original work",
+        "type": "url",
+        "categories": [
+          "review"
+        ]
+      },
+      {
+        "id": "fandom",
+        "label": "Fandom",
+        "type": "text",
+        "categories": [
+          "review"
+        ]
+      }
+    ]
+  },
+  "views": {
+    "home": {
+      "fields": [
+        "date",
+        "type",
+        "summary",
+        "rating"
+      ],
+      "hideEmpty": true
+    },
+    "writing": {
+      "fields": [
+        "date",
+        "type",
+        "summary",
+        "rating"
+      ],
+      "hideEmpty": true
+    },
+    "article": {
+      "fields": [
+        "date",
+        "type",
+        "rating",
+        "tags",
+        "summary",
+        "workUrl",
+        "fandom"
+      ],
+      "hideEmpty": true
+    },
+    "byCategory": {
+      "review": {
+        "fields": [
+          "date",
+          "type",
+          "rating",
+          "summary",
+          "tags"
+        ],
+        "hideEmpty": true
+      }
+    }
+  },
+  "posts": [
+    {
+      "id": "learning-something-new",
+      "title": "On learning something new",
+      "date": "2026-11-27",
+      "type": "notes",
+      "draft": false,
+      "body": "\nSometimes the best way to understand an idea is to try explaining it without looking at your notes.\n\n## A small experiment\n\nWrite down what you think you know, test it against an example, and keep a record of what surprised you.\n\n*This is sample content; replace it with your own writing.*\n",
+      "properties": {
+        "summary": "A few ideas worth revisiting.",
+        "tags": [
+          "Learning"
+        ]
+      }
+    },
+    {
+      "id": "ordinary-afternoon",
+      "title": "An ordinary afternoon",
+      "date": "2026-11-12",
+      "type": "personal",
+      "draft": false,
+      "body": "\nThe small things deserve a place here too. A walk, a cup of coffee, a quiet afternoon spent making something.\n\n*Sample personal post.*\n",
+      "properties": {}
+    },
+    {
+      "id": "sample-draft",
+      "title": "Unpublished draft example",
+      "date": "",
+      "type": "notes",
+      "draft": true,
+      "body": "\nThis is private to your source repository. It is not generated into the public site.\n",
+      "properties": {}
+    },
+    {
+      "id": "story-review",
+      "title": "A story I keep thinking about",
+      "date": "2026-11-08",
+      "type": "review",
+      "draft": false,
+      "body": "\nWhat stayed with me was the way the author built a relationship through small, ordinary moments. The ending felt earned, even if I wanted a little more time with the characters.\n\n## What I liked\n\n- The character development\n- The small moments between major events\n- The emotional payoff\n\n*Sample review, not a review of an actual work.*\n",
+      "properties": {
+        "summary": "A reflection on character, pacing, and the ending.",
+        "rating": 4.5,
+        "tags": [
+          "Fanfiction"
+        ]
+      }
+    },
+    {
+      "id": "zero-knowledge",
+      "title": "A note on zero-knowledge proofs",
+      "date": "2026-11-18",
+      "type": "technical",
+      "draft": false,
+      "body": "\nA zero-knowledge proof is a protocol in which a verifier can be convinced that a statement is true without learning additional information beyond its truth (under the relevant security definition).\n\n## A relation\n\nConsider the relation\n\n$$R = \\{(x,w): f(w)=x\\}.$$\n\nA proof of knowledge for this relation concerns knowledge of a witness $w$ satisfying the relation. Zero knowledge is a separate property.\n\n*Sample technical note.*\n",
+      "properties": {
+        "summary": "An example-driven introduction to a cryptographic idea.",
+        "tags": [
+          "Cryptography",
+          "Mathematics"
+        ]
+      }
+    }
+  ],
+  "gallery": [
+    {
+      "title": "Color study",
+      "type": "artwork",
+      "medium": "Digital art",
+      "date": "2026-11-23",
+      "image": "assets/color-study.svg",
+      "alt": "Illustrative placeholder for color study",
+      "description": "Illustrative placeholder — replace with your own work.",
+      "featured": true,
+      "id": "color-study"
+    },
+    {
+      "title": "A little moment",
+      "type": "artwork",
+      "medium": "Illustration",
+      "date": "2026-11-15",
+      "image": "assets/little-moment.svg",
+      "alt": "Illustrative placeholder for a little moment",
+      "description": "Illustrative placeholder — replace with your own work.",
+      "featured": false,
+      "id": "little-moment"
+    },
+    {
+      "title": "A quiet afternoon",
+      "type": "photography",
+      "medium": "Photography",
+      "date": "2026-11-25",
+      "image": "assets/quiet-afternoon.svg",
+      "alt": "Illustrative placeholder for a quiet afternoon",
+      "description": "Illustrative placeholder — replace with your own work.",
+      "featured": true,
+      "id": "quiet-afternoon"
+    },
+    {
+      "title": "Sunset study",
+      "type": "artwork",
+      "medium": "Painting",
+      "date": "2026-11-27",
+      "image": "assets/sunset-study.svg",
+      "alt": "Illustrative placeholder for sunset study",
+      "description": "Illustrative placeholder — replace with your own work.",
+      "featured": true,
+      "id": "sunset-study"
+    },
+    {
+      "title": "A walk in the city",
+      "type": "photography",
+      "medium": "Photography",
+      "date": "2026-11-20",
+      "image": "assets/walk-city.svg",
+      "alt": "Illustrative placeholder for a walk in the city",
+      "description": "Illustrative placeholder — replace with your own work.",
+      "featured": true,
+      "id": "walk-city"
+    },
+    {
+      "title": "On the way home",
+      "type": "photography",
+      "medium": "Photography",
+      "date": "2026-11-18",
+      "image": "assets/way-home.svg",
+      "alt": "Illustrative placeholder for on the way home",
+      "description": "Illustrative placeholder — replace with your own work.",
+      "featured": true,
+      "id": "way-home"
+    }
+  ]
+}

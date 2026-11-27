@@ -1,0 +1,1 @@
+{"home":{"fields":["date","type","summary","rating"],"hideEmpty":true},"writing":{"fields":["date","type","summary","rating"],"hideEmpty":true},"article":{"fields":["date","type","rating","tags","summary","workUrl","fandom"],"hideEmpty":true},"byCategory":{"review":{"fields":["date","type","rating","summary","tags"],"hideEmpty":true}}}

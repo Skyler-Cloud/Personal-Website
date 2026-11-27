@@ -1,0 +1,33 @@
+---
+import '@fontsource/play/700.css';
+import '@fontsource/nunito/400.css';
+import '@fontsource/nunito/600.css';
+import '@fontsource/nunito/700.css';
+import 'katex/dist/katex.min.css';
+import {existsSync} from 'node:fs';
+import {resolve,dirname,join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {parse} from 'yaml';
+import MarkdownIt from 'markdown-it';
+import texmath from 'markdown-it-texmath';
+import katex from 'katex';
+import {FileRepository} from '../../../../packages/storage/files.ts';
+import {renderPages,escape} from '../../../../packages/frontend/render.ts';
+import {tokenCSS} from '../../../../packages/frontend/tokens.ts';
+export async function getStaticPaths(){
+  // Astro may bundle this module into a different folder during production builds.
+  // Resolve the repository using the working directory rather than a compiled module URL.
+  let project=resolve(process.cwd());
+  while(!existsSync(join(project,'content','site.json'))){const parent=dirname(project);if(parent===project)throw Error('Cannot locate site content root');project=parent;}
+  const root=join(project,'content');
+  const publicDir=join(project,'apps/web/public');
+  const data=await new FileRepository(root,parse,publicDir).load();
+  const md=new MarkdownIt({html:false,linkify:true,typographer:false}).use(texmath,{engine:katex,delimiters:'dollars',katexOptions:{throwOnError:true,trust:false,strict:'warn'}});
+  const base=import.meta.env.BASE_URL.endsWith('/')?import.meta.env.BASE_URL:import.meta.env.BASE_URL+'/';
+  return renderPages(data,{base,markdown:s=>md.render(s)}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
+}
+const {page,site,base,tokens:css}=Astro.props;
+const title=page.path?`${page.title} · ${site.name}`:site.name;
+---
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>{title}</title><meta name="description" content={page.description}/><style is:inline set:html={css}></style><script is:inline>try{document.documentElement.dataset.theme=localStorage.getItem('personal-site-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch{}</script><link rel="stylesheet" href={base+'styles/site.css'}/></head><body><a class="skip-link" href="#main">Skip to content</a><main id="main"><Fragment set:html={page.html}/><footer class="site-footer"><a href={base}>Home</a><a href={base+'gallery/'}>Gallery</a><a href={base+'writing/'}>Writing</a></footer></main><script is:inline src={base+'scripts/site.js'}></script></body></html>
