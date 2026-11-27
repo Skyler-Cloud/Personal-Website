@@ -6,3 +6,6 @@ preview-output/
 *.log
 
 /apps/web/public/vendor/katex/
+
+# Generated mirror of content/assets; edit the source directory instead.
+/apps/web/public/assets/

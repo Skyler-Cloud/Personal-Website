@@ -21,7 +21,7 @@ Production uses locally bundled Play (bold) and Nunito, Markdown-It, and KaTeX. 
 
 - `content/site.json`: shared name, writing limit and category assignments, plus sibling `academic` and `personal` profiles. Each owns its bio, description, portrait, alt text and email. Academic also owns education, publications, CV and GitHub; Personal owns its contact message and gallery limit.
 - `content/writing/`: one Markdown file per article. The filename is a stable URL slug. JSON frontmatter (also valid YAML) is used in the examples; the production build accepts YAML as well.
-- `content/gallery/`: one JSON record per artwork/photo, with image, alt text, title, medium and date. Put image files under `apps/web/public/assets/`. Actual artwork is displayed uncropped on its detail page.
+- `content/gallery/`: one JSON record per artwork/photo, with image, alt text, title, medium and date. Put image files under `content/assets/`. Actual artwork is displayed uncropped on its detail page.
 - `content/properties.json`: writing categories and typed custom-property definitions.
 - `content/views.json`: visible fields, order and empty-field rules for the homepage, writing list, article and category-specific views. Title is always displayed. Change these independently of the content.
 - `design/tokens.json`: colors and typography for Academic/Personal modes. When selecting different font families, update the font imports in `apps/web/src/pages/[...path].astro` as well. Academic typography currently uses system Georgia bold italic as a provisional font; Personal retains Play and Nunito.
@@ -47,11 +47,15 @@ Types are `notes`, `technical`, `personal`, `review`. Add `"draft": true` to exc
 
 For an example custom field, add `{"id":"author","label":"Author","type":"text","categories":["review"]}` to the `fields` array, add `"author":"..."` to review frontmatter, and add `"author"` to the desired view's `fields` array. No renderer changes are needed for these supported field types. URL fields accept only HTTP(S).
 
+## Media assets
+
+Upload portraits, photos, artwork, PDFs, and other public content to `content/assets/`. Use paths such as `assets/academic-profile.jpg` in `site.json` and gallery records. The build copies the directory into the generated public asset location; URLs stay at `/assets/...` (or the deployment base plus `assets/...`). Do not edit `apps/web/public/assets/`, which is now ignored and regenerated. For local development, restart `npm run dev` after adding or changing assets. All files in content/assets are published, even if no page references them.
+
 ## Academic / Personal modes
 
 The root displays Academic; `/academic/` and `/personal/` are stable links. Each has a writing index and article routes. Academic adds papers and education; Personal retains the gallery. Earlier `/writing/`, `/writing/<slug>/` and `/gallery/` URLs still work, with scoped canonical URLs. The mode switch uses ordinary links (no JavaScript or stored preference required). On writing pages it keeps the corresponding writing section or article where available.
 
-By default, notes appear in both modes, technical writing in Academic, personal posts and reviews in Personal. Set frontmatter `"modes": ["academic"]` or `["personal"]` or both to override. Categories and display properties are still independently configurable. Put both portraits in `apps/web/public/assets/` and set `academic.portrait` and `personal.portrait` independently. Academic contact links are rendered only when configured; CV can be an HTTP(S) URL or an `assets/...` file. Education is an array of institution/degree/dates objects, papers an array of id/title/authors/venue/year/summary/pdf/code/url/bibtex objects, with only institution or id/title required. Unconfigured links are omitted.
+By default, notes appear in both modes, technical writing in Academic, personal posts and reviews in Personal. Set frontmatter `"modes": ["academic"]` or `["personal"]` or both to override. Categories and display properties are still independently configurable. Put both portraits in `content/assets/` and set `academic.portrait` and `personal.portrait` independently. Academic contact links are rendered only when configured; CV can be an HTTP(S) URL or an `assets/...` file. Education is an array of institution/degree/dates objects, papers an array of id/title/authors/venue/year/summary/pdf/code/url/bibtex objects, with only institution or id/title required. Unconfigured links are omitted.
 
 ## Navigation performance
 
@@ -60,12 +64,12 @@ Astro's ClientRouter provides client-side navigation without a backend, with nor
 ## Architecture
 
 ```
-content/               Portable content and property/view configuration
+content/               Portable content, media assets and property/view configuration
 packages/contracts/    Types and repository interface (no UI or storage dependency)
 packages/core/         Validation, sorting, reading time and property projection
 packages/storage/      File repository implementing the content interface
 packages/frontend/     Replaceable HTML renderer and design-token adapter
-apps/web/              Astro static page shell, styles, client interactions and media
+apps/web/              Astro static page shell, styles, client interactions and generated static assets
 design/                Theme tokens
 tests/                 Framework-independent automated tests
 ```

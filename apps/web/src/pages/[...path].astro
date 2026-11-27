@@ -20,8 +20,7 @@ export async function getStaticPaths(){
   let project=resolve(process.cwd());
   while(!existsSync(join(project,'content','site.json'))){const parent=dirname(project);if(parent===project)throw Error('Cannot locate site content root');project=parent;}
   const root=join(project,'content');
-  const publicDir=join(project,'apps/web/public');
-  const data=await new FileRepository(root,parse,publicDir).load();
+  const data=await new FileRepository(root,parse).load();
   const md=new MarkdownIt({html:false,linkify:true,typographer:false}).use(texmath,{engine:katex,delimiters:'dollars',katexOptions:{throwOnError:true,trust:false,strict:'warn'}});
   const base=import.meta.env.BASE_URL.endsWith('/')?import.meta.env.BASE_URL:import.meta.env.BASE_URL+'/';
   return renderPages(data,{base,markdown:s=>md.render(s)}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
