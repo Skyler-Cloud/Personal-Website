@@ -19,12 +19,12 @@ Production uses locally bundled Play (bold) and Nunito, Markdown-It, and KaTeX. 
 
 ## Content workflow
 
-- `content/site.json`: name, introduction, email, portrait and homepage display limits.
+- `content/site.json`: shared name and display limits, Personal bio/portrait/contact, independent Academic bio/portrait/contact, education, publications, and default category assignments.
 - `content/writing/`: one Markdown file per article. The filename is a stable URL slug. JSON frontmatter (also valid YAML) is used in the examples; the production build accepts YAML as well.
 - `content/gallery/`: one JSON record per artwork/photo, with image, alt text, title, medium and date. Put image files under `apps/web/public/assets/`. Actual artwork is displayed uncropped on its detail page.
 - `content/properties.json`: writing categories and typed custom-property definitions.
 - `content/views.json`: visible fields, order and empty-field rules for the homepage, writing list, article and category-specific views. Title is always displayed. Change these independently of the content.
-- `design/tokens.json`: colors for light/dark themes and fonts. When selecting different font families, update the font imports in `apps/web/src/pages/[...path].astro` as well. Dark mode is an initial interpretation, not an approved Figma design.
+- `design/tokens.json`: colors and typography for Academic/Personal modes. When selecting different font families, update the font imports in `apps/web/src/pages/[...path].astro` as well. Academic typography currently uses system Georgia bold italic as a provisional font; Personal retains Play and Nunito.
 
 Example `content/writing/my-review.md`:
 
@@ -46,6 +46,12 @@ Write here. Omit any optional properties you don't want to fill in.
 Types are `notes`, `technical`, `personal`, `review`. Add `"draft": true` to exclude a post from the public build. Draft files are still visible to anyone who can access the source repository, so keep private drafts outside a public repository. Rating zero is a real value, not an empty field. The initial scale is 0–5; change `min`, `max`, and `suffix` in the property definition if desired.
 
 For an example custom field, add `{"id":"author","label":"Author","type":"text","categories":["review"]}` to the `fields` array, add `"author":"..."` to review frontmatter, and add `"author"` to the desired view's `fields` array. No renderer changes are needed for these supported field types. URL fields accept only HTTP(S).
+
+## Academic / Personal modes
+
+The root displays Academic; `/academic/` and `/personal/` are stable links. Each has a writing index and article routes. Academic adds papers and education; Personal retains the gallery. Earlier `/writing/`, `/writing/<slug>/` and `/gallery/` URLs still work, with scoped canonical URLs. The mode switch uses ordinary links (no JavaScript or stored preference required). On writing pages it keeps the corresponding writing section or article where available.
+
+By default, notes appear in both modes, technical writing in Academic, personal posts and reviews in Personal. Set frontmatter `"modes": ["academic"]` or `["personal"]` or both to override. Categories and display properties are still independently configurable. Put the second portrait in `apps/web/public/assets/` and set `academic.portrait` separately. Academic contact links are rendered only when configured; CV can be an HTTP(S) URL or an `assets/...` file. Education is an array of institution/degree/dates objects, papers an array of id/title/authors/venue/year/summary/pdf/code/url/bibtex objects, with only institution or id/title required. Unconfigured links are omitted.
 
 ## Architecture
 
@@ -76,5 +82,5 @@ The repository is public. Draft exclusion applies to the generated site, not the
 
 - The initial GitHub verification runs passed type checking, unit tests, production builds and local link/asset checks at the root and a test subdirectory. The committed lockfile was recovered from the first successful run.
 - The offline HTML preview can be rebuilt with node --experimental-strip-types scripts/build-preview.mjs after installing Python 3 and mistune. This is not the production build.
-- The current art and portrait are illustrative placeholder SVGs, not exported Figma artwork. Dark mode is an initial interpretation rather than an approved Figma design.
+- The current art and portrait are illustrative placeholder SVGs, not exported Figma artwork. Academic typography is provisional; the actual photos, CV, education, and publications are not populated.
 - The private visual Content Studio, standalone interactive artwork, Figma-to-CSS synchronization, full accessibility audit, Safari validation, image optimization pipeline, search, RSS, sitemap and separate live branch previews are not implemented yet.
