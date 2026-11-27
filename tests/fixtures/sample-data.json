@@ -8,7 +8,29 @@
     "portrait": "assets/portrait.svg",
     "portraitAlt": "Illustrative placeholder for your portrait",
     "homeWritingLimit": 3,
-    "homeGalleryLimit": 5
+    "homeGalleryLimit": 5,
+    "modeCategories": {
+      "academic": [
+        "notes",
+        "technical"
+      ],
+      "personal": [
+        "notes",
+        "personal",
+        "review"
+      ]
+    },
+    "academic": {
+      "bio": "I’m interested in cryptography and theoretical computer science, particularly zero-knowledge proofs and secure computation.",
+      "description": "Research, papers and technical writing.",
+      "portrait": "assets/academic-portrait.svg",
+      "portraitAlt": "Illustrative placeholder for the academic portrait",
+      "email": "",
+      "cv": "",
+      "github": "",
+      "education": [],
+      "papers": []
+    }
   },
   "config": {
     "categories": [

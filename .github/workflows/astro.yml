@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'preview' && github.event.workflow_run.head_repository.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -54,6 +54,20 @@ jobs:
         run: |
           npm run build
           npm run check:build
+      - uses: actions/setup-python@v5
+        if: github.event_name != 'workflow_run'
+        with:
+          python-version: '3.12'
+      - name: Install browser test tools
+        if: github.event_name != 'workflow_run'
+        run: |
+          python -m pip install playwright==1.51.0
+          python -m playwright install --with-deps chromium webkit
+      - name: Browser navigation regression tests
+        if: github.event_name != 'workflow_run'
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path || '/Personal-Website/' }}
+        run: python scripts/browser-navigation-check.py
       - name: Upload production build
         uses: actions/upload-artifact@v4
         with:

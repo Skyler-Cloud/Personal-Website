@@ -4,3 +4,5 @@ dist/
 preview-output/
 .DS_Store
 *.log
+
+/apps/web/public/vendor/katex/
