@@ -195,3 +195,23 @@ html[data-portrait-flip] .portrait-stage .portrait{visibility:hidden!important}
 .portrait-flip-back{transform:rotateY(180deg)}
 .portrait-flip-layer[data-kind=dream] .portrait-flip-face{box-shadow:1.5px 0 #28b8d6,-1.5px 0 #d95197}
 @media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-mosaic,.portrait-flip-layer{display:none!important}html[data-portrait-flip] .portrait-stage .portrait{visibility:visible!important}}
+
+/* Slightly opposing photo angles, centered on the same layout anchor. */
+html[data-mode=academic]{--portrait-angle:-2deg}
+html[data-mode=personal]{--portrait-angle:2deg}
+.home-profile .portrait{transform:rotate(var(--portrait-angle));transform-origin:center}
+.portrait-flip-layer{transform-origin:center}
+/* Personal: two angular, offset ink frames around the whole writing row.
+   No gradient, no colored title underline, no layout shift. */
+html[data-mode=personal] .writing-entry{position:relative;isolation:isolate}
+.dream-entry-frame{position:absolute;inset:1px -7px 2px;width:calc(100% + 14px);height:calc(100% - 3px);overflow:visible;pointer-events:none;z-index:-1;opacity:0;transition:opacity 100ms ease-out}
+.dream-entry-frame path{stroke-width:1.6;stroke-linejoin:miter}
+.dream-entry-frame-back{stroke:var(--dream-frame-back,#e9c83a)}
+.dream-entry-frame-front{stroke:var(--dream-frame-front,#d95197)}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-frame{opacity:1}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within),
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) :is(h3,a,p,span,strong,em,div,small,time){color:#fff;-webkit-text-fill-color:currentColor;text-shadow:none}
+html[data-mode=personal] .writing-entry:is(:hover,:focus-within) h3 a{background-image:none;text-decoration:none}
+html[data-mode=personal] .writing-entry h3 a::after{display:none}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within){border-bottom-color:transparent}
+@media(forced-colors:active){.dream-entry-frame{display:none}html[data-mode=personal] .writing-entry:is(:hover,:focus-within){outline:1px solid Highlight}html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) :is(h3,a,p,span,strong,em,div,small,time){color:CanvasText}}

@@ -28,11 +28,24 @@
    const i=(Number(a.dataset.hoverIndex||0)+1)%3;a.dataset.hoverIndex=String(i);a.style.setProperty('--hover-color',c[i]);
  }
  function entryFrom(t){return t instanceof Element?t.closest('.writing-entry'):null}
+ const dreamInk=['#49cce6','#aa90ff','#f188bd','#f18a69','#f3d45e','#70d89b'];
+ function dreamHighlight(row){
+   if(!row||root().dataset.mode!=='personal')return;
+   const prior=row.style.getPropertyValue('--dream-frame-back')+','+row.style.getPropertyValue('--dream-frame-front');
+   let c=shuffled(dreamInk).slice(0,2);
+   if(c.join(',')===prior)c=[c[1],c[0]];
+   row.style.setProperty('--dream-frame-back',c[0]);row.style.setProperty('--dream-frame-front',c[1]);
+ }
  document.addEventListener('PointerEvent' in window?'pointerover':'mouseover',e=>{
-   const row=entryFrom(e.target),title=titleFrom(e.target);
-   if(row&&(row!==entryFrom(e.relatedTarget)||title&&title!==titleFrom(e.relatedTarget)))cycle(title||row.querySelector('h3 a'));
+   const row=entryFrom(e.target),title=titleFrom(e.target),entered=row&&row!==entryFrom(e.relatedTarget);
+   if(entered&&root().dataset.mode==='personal')dreamHighlight(row);
+   else if(row&&(entered||title&&title!==titleFrom(e.relatedTarget)))cycle(title||row.querySelector('h3 a'));
  });
- document.addEventListener('focusin',e=>{const a=titleFrom(e.target);if(a&&a!==titleFrom(e.relatedTarget)&&!a.matches(':hover'))cycle(a)});
+ document.addEventListener('focusin',e=>{
+   const a=titleFrom(e.target),row=entryFrom(e.target);
+   if(root().dataset.mode==='personal'){if(row&&row!==entryFrom(e.relatedTarget)&&!row.matches(':hover'))dreamHighlight(row)}
+   else if(a&&a!==titleFrom(e.relatedTarget)&&!a.matches(':hover'))cycle(a)
+ });
  const NS='http://www.w3.org/2000/svg';
  const mosaic50=[[11,3,2,2],[0,11,2,1],[11,10,5,1],[5,0,6,4],[2,2,2,4],[14,11,2,1],[10,8,1,3],[15,1,1,2],[0,9,2,2],[11,0,5,1],[5,4,6,3],[0,0,5,2],[0,2,2,4],[8,8,1,1]];
  function ensureMosaic(doc){
@@ -159,9 +172,11 @@
    const src=document.querySelector('.portrait-stage .portrait'),dst=doc.querySelector('.portrait-stage .portrait');
    if(!src||!dst||!src.complete||!src.naturalWidth||!src.getClientRects().length)return;
    let destination;try{destination=new URL(dst.getAttribute('src'),destURL).href}catch{return}
-   const r=src.getBoundingClientRect();if(r.width<1||r.height<1||r.bottom<0||r.top>innerHeight)return;
+   const r=src.closest('.portrait-stage').getBoundingClientRect();if(r.width<1||r.height<1||r.bottom<0||r.top>innerHeight)return;
    const layer=document.createElement('div');layer.className='portrait-flip-layer';layer.dataset.kind=kind;layer.setAttribute('aria-hidden','true');layer.setAttribute('data-astro-transition-persist','portrait-mode-flip');
    place(layer,r);
+   const angle=root().dataset.mode==='academic'?-2:2;
+   layer.style.transform='rotate('+angle+'deg)';
    const widths=kind==='dream'?[.25,.34,.18,.23]:[1];
    let start=0;
    const pieces=[];
@@ -180,7 +195,8 @@
    document.body.append(layer);
    const marker=doc.createElement('div');marker.className='portrait-flip-layer';marker.setAttribute('data-astro-transition-persist','portrait-mode-flip');marker.setAttribute('aria-hidden','true');doc.body.append(marker);
    root().dataset.portraitFlip='true';doc.documentElement.dataset.portraitFlip='true';
-   flip={layer,pieces,kind,rect:r,animations:[]};
+   flip={layer,pieces,kind,rect:r,angle,animations:[]};
+   flip.animations.push(layer.animate([{transform:'rotate('+angle+'deg)'},{transform:'rotate(0deg)'}],{duration:kind==='dream'?DREAM_MS:WAKE_MS,easing:kind==='dream'?'steps(2,end)':IN_CURVE,fill:'both'}));
    for(const [i,piece] of pieces.entries()){
      const deg=kind==='dream'?[105,78,94,65][i]:90;
      const delay=kind==='dream'?[0,25,8,38][i]:0;
@@ -194,7 +210,8 @@
    const {layer,rect,kind,pieces}=flip;
    if(!layer.isConnected){document.querySelector('.portrait-flip-layer')?.remove();document.body.append(layer)}
    root().dataset.portraitFlip='true';
-   const end=dst.getBoundingClientRect(),duration=kind==='dream'?DREAM_MS:WAKE_MS;
+   const end=dst.closest('.portrait-stage').getBoundingClientRect(),duration=kind==='dream'?DREAM_MS:WAKE_MS;
+   flip.animations.push(layer.animate([{transform:'rotate(0deg)'},{transform:'rotate('+(-flip.angle)+'deg)'}],{duration,easing:kind==='dream'?'steps(2,end)':OUT_CURVE,fill:'both'}));
    flip.animations.push(layer.animate([{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px'},{left:end.left+'px',top:end.top+'px',width:end.width+'px',height:end.height+'px'}],{duration,easing:OUT_CURVE,fill:'both'}));
    for(const [i,piece] of pieces.entries()){
      const deg=kind==='dream'?[105,78,94,65][i]:90;

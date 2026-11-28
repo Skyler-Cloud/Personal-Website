@@ -98,11 +98,11 @@ with tempfile.TemporaryDirectory() as temp:
                         for mode in ("academic", "personal"):
                             geometry.goto(url+mode+"/")
                             geometry.evaluate("document.fonts.ready")
-                            snapshots.append(geometry.evaluate("""() => Object.fromEntries(['.home-profile .masthead h1','.portrait-stage .portrait','.home-profile .bio','.home-content'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,[r.x,r.y,r.width,r.height]]}))"""))
+                            snapshots.append(geometry.evaluate("""() => Object.fromEntries(['.home-profile .masthead h1','.portrait-stage','.home-profile .bio','.home-content'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,[r.x,r.y,r.width,r.height]]}))"""))
                         for selector in snapshots[0]:
                             # Different bio lengths and featured content can affect
                             # height, but not their top-left position or width.
-                            fields = (0,1,2,3) if selector in (".home-profile .masthead h1", ".portrait-stage .portrait") else (0,1,2)
+                            fields = (0,1,2,3) if selector in (".home-profile .masthead h1", ".portrait-stage") else (0,1,2)
                             if width < 800 and selector == ".home-content":
                                 # Stacked content follows the variable-length intro.
                                 fields = (0,2)
@@ -138,7 +138,17 @@ with tempfile.TemporaryDirectory() as temp:
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     personal_link = motion.locator(".writing-entry h3 a").first
                     personal_link.hover()
-                    assert personal_link.evaluate("(el)=>getComputedStyle(el).backgroundImage").startswith("linear-gradient")
+                    personal_row = personal_link.locator("xpath=ancestor::article")
+                    expect(personal_link).to_have_css("color","rgb(255, 255, 255)")
+                    expect(personal_link).to_have_css("background-image","none")
+                    expect(personal_row.locator(".dream-entry-frame")).to_have_css("opacity","1")
+                    colors = personal_row.evaluate("(el)=>[el.style.getPropertyValue('--dream-frame-back'),el.style.getPropertyValue('--dream-frame-front')]")
+                    assert all(colors) and colors[0]!=colors[1]
+                    motion.mouse.move(2,2)
+                    personal_link.hover()
+                    assert personal_row.evaluate("(el)=>[el.style.getPropertyValue('--dream-frame-back'),el.style.getPropertyValue('--dream-frame-front')]") != colors
+                    for el in personal_row.locator(".meta, .summary, .rating").all():
+                        expect(el).to_have_css("color","rgb(255, 255, 255)")
                     motion.evaluate("""window.__wakeMidpoint=null;document.addEventListener('astro:after-swap',()=>{window.__wakeMidpoint={mode:document.documentElement.dataset.mode,phase:document.documentElement.dataset.wakePhase,at:performance.now()}})""")
                     motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
                     motion.wait_for_function("window.__wake.some(x=>x[0]==='academic'&&x[1]==='in')")
