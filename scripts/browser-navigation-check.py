@@ -98,6 +98,14 @@ with tempfile.TemporaryDirectory() as temp:
                         for mode in ("academic", "personal"):
                             geometry.goto(url+mode+"/")
                             geometry.evaluate("document.fonts.ready")
+                            if mode == "personal":
+                                art = geometry.locator(".home-profile > .dream-scene").bounding_box()
+                                panel = geometry.locator(".home-profile").bounding_box()
+                                assert art and panel
+                                assert abs(art["y"]-panel["y"]) < 2 and abs(art["x"]+art["width"]-panel["x"]-panel["width"]) < 2
+                                assert 0 < art["width"] < panel["width"]*.5
+                            else:
+                                assert geometry.locator(".dream-scene").count() == 0
                             snapshots.append(geometry.evaluate("""() => Object.fromEntries(['.home-profile .masthead h1','.portrait-stage','.home-profile .bio','.home-content'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,[r.x,r.y,r.width,r.height]]}))"""))
                         for selector in snapshots[0]:
                             # Different bio lengths and featured content can affect
@@ -136,7 +144,9 @@ with tempfile.TemporaryDirectory() as temp:
                     assert motion.locator(".glitch-word").count() == 0
                     assert motion.evaluate("window.__frames.every(x=>x[1]!=='3')")
                     assert motion.locator(".portrait-flip-layer").count() == 0
-                    expect(motion.locator(".dream-scene")).to_be_hidden()
+                    expect(motion.locator(".home-profile > .dream-scene")).to_be_visible()
+                    assert motion.locator(".dream-scene").evaluate("(el)=>getComputedStyle(el).position") == "absolute"
+                    assert motion.locator(".dream-scene").evaluate("(el)=>getComputedStyle(el).maskImage || getComputedStyle(el).webkitMaskImage").startswith("radial-gradient")
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     personal_link = motion.locator(".writing-entry h3 a").first
                     personal_row = personal_link.locator("xpath=ancestor::article")

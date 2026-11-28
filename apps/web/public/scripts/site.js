@@ -80,7 +80,7 @@
      }
      n.replaceWith(f);
    }
-   for(const el of main.querySelectorAll('.home-profile,.summary-wash,.rating-wash,.article-body pre,.article-body blockquote,.filters button[aria-pressed=true],.portrait-stage,.dream-scene')){
+   for(const el of main.querySelectorAll('.home-profile,.summary-wash,.rating-wash,.article-body pre,.article-body blockquote,.filters button[aria-pressed=true],.portrait-stage')){
      el.dataset.glitchBlock='';
    }
  }
