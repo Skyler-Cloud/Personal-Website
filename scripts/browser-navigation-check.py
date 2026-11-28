@@ -88,14 +88,23 @@ with tempfile.TemporaryDirectory() as temp:
                     motion.wait_for_load_state("networkidle")
                     expect(motion.locator(".home-profile")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
+                    # Verify actual CSS animation events, not only a mode flag.
+                    motion.evaluate("""window.__dreamEvents=[];document.addEventListener('animationstart',e=>{if(e.animationName==='dream-breakthrough'||e.animationName==='dream-drain')window.__dreamEvents.push(e.animationName)})""")
+                    link = motion.locator(".writing-entry h3 a").first
+                    gradient = link.evaluate("(el)=>el.style.getPropertyValue('--hover-gradient')")
+                    assert gradient.startswith("linear-gradient") and gradient.count("#")==3
+                    link.hover()
+                    assert link.evaluate("(el)=>getComputedStyle(el).backgroundImage").startswith("linear-gradient")
                     motion.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal",exact=True).click()
                     expect(motion.locator("html")).to_have_attribute("data-mode","personal")
                     expect(motion.locator("html")).to_have_attribute("data-mode-motion","enter")
                     expect(motion.locator(".dream-scene")).to_be_visible()
-                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(35, 38, 61)"
+                    motion.wait_for_function("window.__dreamEvents.includes('dream-breakthrough')")
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
                     motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
                     expect(motion.locator("html")).to_have_attribute("data-mode-motion","exit")
+                    motion.wait_for_function("window.__dreamEvents.includes('dream-drain')")
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
                     motion.close()
                     plain = browser.new_page(java_script_enabled=False)

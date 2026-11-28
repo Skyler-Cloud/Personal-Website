@@ -76,7 +76,7 @@ html[data-mode=academic] a:hover,html[data-mode=academic] a:focus-visible{color:
 }
 .writing-entry h3 a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--reveal);transform:scaleX(0);transform-origin:left;transition:transform .45s ease}
 .writing-entry:hover h3 a::after,.writing-entry:focus-within h3 a::after{transform:scaleX(1)}
-html[data-mode=personal] .home-profile{padding:18px;background:var(--rose-surface)}
+html[data-mode=personal] .home-profile{padding:18px;background:rgba(99,75,151,.29)}
 html[data-mode=personal] .home-profile h1{font-size:clamp(27px,6vw,34px)}
 html[data-mode=personal] .home-profile .portrait{width:112px}
 html[data-mode=personal] .home-profile .intro{flex-direction:column}
@@ -124,3 +124,40 @@ html[data-mode=academic] .home-profile .bio{max-width:300px}
 html[data-mode-motion=enter] .writing-entry h3 a,html[data-mode-motion=exit] .writing-entry h3 a{transition:none}
 html[data-mode-motion=exit] .masthead h1,html[data-mode-motion=exit] .section-head h2{background:none;color:var(--heading)}
 @media(prefers-reduced-motion:reduce){.dream-layer{animation:none}}
+
+/* Academic color is a per-entry surprise; Personal keeps its existing hover. */
+html[data-mode=academic]{
+ --academic-reveal-default:linear-gradient(90deg,#00839d,#9c277b,#6543c3);
+}
+html[data-mode=academic] a:not(.writing-entry h3 a):hover,
+html[data-mode=academic] a:not(.writing-entry h3 a):focus-visible{color:var(--hover-color,#7950bd)}
+@supports (background-clip:text){
+ html[data-mode=academic] .writing-entry:hover h3 a,
+ html[data-mode=academic] .writing-entry:focus-within h3 a{
+  background-image:var(--hover-gradient,var(--academic-reveal-default));
+  background-clip:text;-webkit-background-clip:text;color:transparent;
+ }
+}
+html[data-mode=academic] .writing-entry h3 a::after{background:var(--hover-gradient,var(--academic-reveal-default));height:2px}
+html[data-mode-motion] main [data-reveal-motion]{
+ background-image:none!important;-webkit-text-fill-color:currentColor!important;
+ text-decoration:none;
+}
+html[data-mode-motion] main [data-reveal-motion]::after{transform:scaleX(0)}
+html[data-mode-motion=enter] main [data-reveal-motion]{animation:dream-breakthrough .86s var(--dream-delay,0ms) both}
+html[data-mode-motion=exit] main [data-reveal-motion]{animation:dream-drain .82s var(--dream-delay,0ms) both}
+@keyframes dream-breakthrough{
+ 0%{color:#aaa;text-shadow:none}
+ 12%{color:var(--glitch-a);text-shadow:2.5px 0 #28b8d6,-2.5px .5px #d95197}
+ 26%{color:var(--glitch-b);text-shadow:-2px 0 #28b8d6,2px 0 #e86e59}
+ 42%{color:var(--glitch-c);text-shadow:1.5px 0 #7959c8,-1.5px 0 #50b776}
+ 68%{color:var(--glitch-b);text-shadow:.7px 0 #28b8d6,-.7px 0 #d95197}
+ 100%{color:var(--dream-final);text-shadow:none}
+}
+@keyframes dream-drain{
+ 0%{color:var(--glitch-a);text-shadow:1px 0 #28b8d6,-1px 0 #d95197}
+ 100%{color:var(--dream-final);text-shadow:none}
+}
+@media(forced-colors:active){
+ html[data-mode=academic] .writing-entry h3 a{color:LinkText!important;background:none!important}
+}
