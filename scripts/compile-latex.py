@@ -46,9 +46,10 @@ def compile_job(source_dir, output_dir, job):
             if len(choices)!=1:
                 raise ValueError("Ambiguous main TeX file; set latexMain in article properties")
             main=choices[0]
-        if not main.is_file():
+        if main.name.startswith("-") or not main.is_file():
             raise ValueError("Missing main TeX file: "+str(main))
-        env={**os.environ,"openin_any":"p","openout_any":"p"}
+        env={k:os.environ[k] for k in ("PATH","LANG","LC_ALL","SYSTEMROOT") if k in os.environ}
+        env.update({"HOME":str(work),"openin_any":"p","openout_any":"p"})
         engine={"pdflatex":"-pdf","xelatex":"-xelatex","lualatex":"-lualatex"}[job["engine"]]
         # -norc prevents project latexmkrc execution. Shell escape is explicitly disabled.
         command=["latexmk","-norc",engine,"-interaction=nonstopmode","-halt-on-error","-no-shell-escape","-jobname=website-output",main.name]

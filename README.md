@@ -67,7 +67,7 @@ latexEngine: pdflatex
 Optional introduction.
 ```
 
-The build compiles the complete project to a PDF and the article provides a link to read it. If latexMain is omitted, the compiler looks for a unique main.tex or documentclass file. Engines: pdflatex (default), xelatex and lualatex. CI installs TeX Live packages only when sources exist; local builds with published TeX require Python 3, latexmk and the necessary TeX packages. No source ZIP is published as a website asset, but the public repository still exposes it. Only commit trusted author-owned projects: TeX is executable input, not a hardened sandbox. Shell escape and project latexmkrc are disabled; archives have file count/size limits and unsafe paths are rejected. Packages requiring shell escape or unavailable fonts may fail. This is PDF rendering, not native HTML conversion or live Overleaf synchronization. The offline standalone preview does not compile or embed PDFs; use the hosted preview. The generated assets/latex/ location is reserved.
+The build compiles the complete project to a PDF and the article provides a link to read it. If latexMain is omitted, the compiler looks for a unique main.tex or documentclass file. Engines: pdflatex (default), xelatex and lualatex. CI installs TeX Live packages only when sources exist; local builds with published TeX require Python 3, latexmk and the necessary TeX packages. No source ZIP is published as a website asset, but the public repository still exposes it. Only commit trusted author-owned projects: TeX is executable input, not a hardened sandbox. Shell escape and project latexmkrc are disabled; archives have file count/size limits and unsafe paths are rejected. Packages requiring shell escape or unavailable fonts may fail. This is PDF rendering, not native HTML conversion or live Overleaf synchronization. The offline directory preview also compiles PDFs if TeX tools are installed; use the hosted preview for the single-file prototype's PDF links. The generated assets/latex/ location is reserved.
 
 ## Media assets
 
@@ -100,7 +100,7 @@ The frontend obtains a validated content snapshot via `Repository.load()`. It do
 
 ## Hosting and development
 
-The site uses GitHub Pages and GitHub Actions, with no separate hosting service. Production URL: https://skyler-cloud.github.io/.
+The site uses GitHub Pages and GitHub Actions, with no separate hosting service. Production URL: https://lillian.wang/.
 
 The workflow checks TypeScript, runs unit tests, builds and checks the root site, then builds and checks the actual Pages subdirectory. Only successful builds on the main branch (not pull requests) may deploy. Pull requests can be used to test experimental changes without replacing the public site; one explicitly selected development branch is hosted under /preview/.
 
@@ -117,7 +117,7 @@ The repository is public. Draft exclusion applies to the generated site, not the
 
 ## Hosted development preview
 
-The public site has one reserved development path: https://skyler-cloud.github.io/preview/. The `preview` branch selects the code to review. Push only trusted, owner-approved development commits there; fork pull requests are not automatically published. Updating that branch triggers a refresh of the single Pages deployment. Production is always built from main, and preview is built in a separate read-only job using the /preview/ base path. A manual run of **Verify and deploy website** on main also refreshes both. Preview content is public, with noindex metadata (not access control). If the preview build fails, production may still deploy without the preview directory. The reserved preview path must not be used for production content. For independent feature review, keep a feature PR open, update the preview branch to its reviewed head, and merge only after approval. No separate hosting account is required.
+The public site has one reserved development path: https://lillian.wang/preview/. The `preview` branch selects the code to review. Push only trusted, owner-approved development commits there; fork pull requests are not automatically published. Updating that branch triggers a refresh of the single Pages deployment. Production is always built from main, and preview is built in a separate read-only job using the /preview/ base path. A manual run of **Verify and deploy website** on main also refreshes both. Preview content is public, with noindex metadata (not access control). If the preview build fails, production may still deploy without the preview directory. The reserved preview path must not be used for production content. For independent feature review, keep a feature PR open, update the preview branch to its reviewed head, and merge only after approval. No separate hosting account is required.
 
 ## Root-domain migration
 

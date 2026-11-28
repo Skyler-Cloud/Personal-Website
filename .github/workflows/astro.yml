@@ -43,6 +43,7 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y --no-install-recommends latexmk texlive-latex-extra texlive-fonts-recommended texlive-science texlive-bibtex-extra biber texlive-xetex texlive-luatex
           fi
+      - run: python3 scripts/test-latex.py
       - run: npm run check
       - run: npm test
       - name: Verify root hosting
@@ -104,6 +105,7 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y --no-install-recommends latexmk texlive-latex-extra texlive-fonts-recommended texlive-science texlive-bibtex-extra biber texlive-xetex texlive-luatex
           fi
+      - run: python3 scripts/test-latex.py
       - run: npm run check
       - run: npm test
       - name: Build preview under its own base path
