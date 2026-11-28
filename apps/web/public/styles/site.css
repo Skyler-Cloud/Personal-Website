@@ -157,9 +157,11 @@ html[data-dream-frame] [data-glitch-block]{background-color:var(--glitch-block-b
 html[data-dream-frame] main :is(.section-head,.writing-entry,.mode-nav,.site-footer,.filters){border-color:var(--glitch-base)}
 html[data-dream-frame] .dream-scene{background-color:#25223d}
 html[data-dream-frame] .dream-layer{opacity:.72}
-/* Wake is an actual per-element color morph. 0 -> 20%, cut to 80% -> 100%.
-   The document background is itself painted, never a transparent canvas. */
-html[data-wake-phase=out],html[data-wake-phase=hold-out]{
+
+/* Waking: CSS supplies two endpoint palettes; Web Animations interpolates
+   the real element colors with independent amounts. No uniform veil, no
+   native snapshot crossfade, no CSS transition lingering at the cut. */
+html[data-wake-phase=out]{
  --page:#444552;--body:#cbc9cf;--heading:#c9c7ce;--link:#aeaacb;--muted:#a8a5ba;
  --rule:#605f71;--rose-text:#b2aed1;--orange-text:#c2a0ac;--rose-line:#605f71;--peach-line:#69657d;
  --rose-surface:#4c4e60;--peach-surface:#564e5f;--lavender-surface:#505268;
@@ -169,28 +171,27 @@ html[data-wake-phase=hold-in]{
  --rule:#a09fab;--rose-text:#635a76;--orange-text:#63434f;--rose-line:#a09fab;--peach-line:#a29eab;
  --rose-surface:#c7c7c9;--peach-surface:#c6c3c9;--lavender-surface:#c7c7ca;
 }
-html[data-wake-phase] body,html[data-wake-phase] main,html[data-wake-phase] main *{
- transition:background-color 280ms ease,color 280ms ease,border-color 280ms ease,outline-color 280ms ease,fill 280ms ease,stroke 280ms ease,opacity 280ms ease,box-shadow 280ms ease,text-shadow 280ms ease;
+html[data-wake-phase],html[data-wake-phase] *,html[data-wake-phase] *::before,html[data-wake-phase] *::after{
+ transition:none!important;animation:none!important;
 }
-html[data-wake-phase=hold-out],html[data-wake-phase=hold-in],
-html[data-wake-phase=hold-out] *,html[data-wake-phase=hold-in] *{transition:none!important}
-html[data-wake-phase=out],html[data-wake-phase=in]{transition:background-color 280ms ease}
-html[data-wake-phase=out] .home-profile,html[data-wake-phase=hold-out] .home-profile{background-color:rgba(117,104,155,.23)}
-html[data-wake-phase=out] .dream-scene,html[data-wake-phase=hold-out] .dream-scene{background-color:#41414f}
-html[data-wake-phase=out] .dream-layer,html[data-wake-phase=hold-out] .dream-layer{opacity:.8}
-html[data-wake-phase] main :is(.masthead h1,.section-head h2,.writing-entry h3 a){background-image:none!important;color:var(--heading);-webkit-text-fill-color:currentColor!important;text-shadow:none}
+html[data-wake-phase=out] .home-profile{background-color:rgba(117,104,155,.23)}
+html[data-wake-phase=out] .dream-scene{background-color:#41414f}
+html[data-wake-phase=out] .dream-layer{opacity:.78}
+html[data-wake-phase=out] .dream-caption,html[data-wake-phase=out] .site-mark{color:var(--muted)}
+html[data-wake-phase] .writing-entry h3 a{background-image:none!important;-webkit-text-fill-color:currentColor!important}
+html[data-mode=personal][data-wake-phase] .writing-entry h3 a{color:var(--link)}
+html[data-mode=academic][data-wake-phase] .masthead h1,
+html[data-mode=academic][data-wake-phase] .section-head h2{
+ background-image:none!important;color:var(--heading);-webkit-text-fill-color:currentColor!important;
+}
 html[data-wake-phase] .writing-entry h3 a::after{transform:scaleX(0)}
-/* SVG color matrix tints actual image pixels while preserving alpha. */
-html[data-wake-phase] main :is(img,.dream-layer--art,.character-slot){filter:url(#wake-photo-tint)}
-html[data-mode=academic][data-wake-phase] .portrait{filter:grayscale(1) url(#wake-photo-tint)}
-html[data-mode=academic][data-wake-phase=hold-in] body::before{opacity:0}
-html[data-mode=academic][data-wake-phase=in] body::before{transition:opacity 280ms ease}
-@media(prefers-reduced-motion:reduce),(forced-colors:active){
- .dream-mosaic{display:none!important}
- html[data-wake-phase] body,html[data-wake-phase] main *{transition:none!important}
-}
-
-/* Color details with formerly hard-coded colors also participate in waking. */
-html[data-wake-phase=out] .dream-caption,html[data-wake-phase=hold-out] .dream-caption{color:var(--muted)}
-html[data-wake-phase=out] .site-mark,html[data-wake-phase=hold-out] .site-mark{color:var(--muted)}
 html[data-wake-phase=hold-in] .portrait{border-color:var(--rule)}
+/* Portrait stays crisp; the two existing photos cut with their own layouts.
+   Future character/portrait animation can be designed independently. */
+html[data-wake-phase] .portrait{opacity:1!important}
+html[data-mode=personal][data-wake-phase] .portrait{filter:none!important}
+html[data-mode=academic][data-wake-phase] .portrait{filter:grayscale(1)!important}
+html[data-wake-phase]::view-transition-group(*),
+html[data-wake-phase]::view-transition-old(*),
+html[data-wake-phase]::view-transition-new(*){animation:none!important}
+@media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-mosaic{display:none!important}}

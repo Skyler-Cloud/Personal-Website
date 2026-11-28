@@ -90,7 +90,7 @@ with tempfile.TemporaryDirectory() as temp:
                     expect(motion.locator(".home-profile")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
                     # Observe the actual outgoing and incoming DOM states.
-                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
+                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase,performance.now()]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
                     link = motion.locator(".writing-entry h3 a").first
                     bands = link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')")
                     assert bands.count("#")==3
@@ -118,11 +118,17 @@ with tempfile.TemporaryDirectory() as temp:
                     personal_link = motion.locator(".writing-entry h3 a").first
                     personal_link.hover()
                     assert personal_link.evaluate("(el)=>getComputedStyle(el).backgroundImage").startswith("linear-gradient")
-                    motion.evaluate("""window.__wakeMidpoint=null;document.addEventListener('astro:after-swap',()=>{window.__wakeMidpoint={mode:document.documentElement.dataset.mode,phase:document.documentElement.dataset.wakePhase,background:getComputedStyle(document.body).backgroundColor}})""")
+                    motion.evaluate("""window.__wakeMidpoint=null;document.addEventListener('astro:after-swap',()=>{window.__wakeMidpoint={mode:document.documentElement.dataset.mode,phase:document.documentElement.dataset.wakePhase,at:performance.now()}})""")
                     motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
                     motion.wait_for_function("window.__wake.some(x=>x[0]==='academic'&&x[1]==='in')")
                     assert motion.evaluate("window.__wake.some(x=>x[0]==='personal'&&x[1]==='out')")
-                    assert motion.evaluate("window.__wakeMidpoint") == {"mode":"academic","phase":"hold-in","background":"rgb(208, 208, 211)"}
+                    assert motion.evaluate("window.__wakeMidpoint.mode") == "academic"
+                    assert motion.evaluate("window.__wakeMidpoint.phase") == "in"
+                    # Timing includes scheduling overhead; detect an unintended
+                    # several-hundred-ms hold, allowing slower CI browsers.
+                    wake_elapsed = motion.evaluate("window.__wake.find(x=>x[0]==='academic'&&x[1]==='in')[2]-window.__wake.find(x=>x[0]==='personal'&&x[1]==='out')[2]")
+                    assert wake_elapsed < 500, f"Wake cut delayed: {wake_elapsed:.0f} ms"
+                    assert motion.locator(".portrait").evaluate("(el)=>getComputedStyle(el).opacity") == "1"
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase')")
                     expect(motion.locator("html")).to_have_attribute("data-mode","academic")
                     assert motion.locator("body").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(255, 255, 255)"

@@ -2,7 +2,7 @@
 
 
 (()=>{'use strict';
- if(window.__dreamMotionV4Installed)return;window.__dreamMotionV4Installed=true;
+ if(window.__dreamMotionV5Installed)return;window.__dreamMotionV5Installed=true;
  const root=()=>document.documentElement;
  const reduce=matchMedia('(prefers-reduced-motion: reduce)'),forced=matchMedia('(forced-colors: active)');
  const quiet=()=>reduce.matches||forced.matches;
@@ -90,26 +90,100 @@
    for(const el of doc.querySelectorAll('[data-glitch-block]')){delete el.dataset.glitchBlock;el.style.removeProperty('--glitch-block-bg');el.style.removeProperty('--glitch-block-line')}
    doc.documentElement.style.removeProperty('--glitch-base');doc.documentElement.style.removeProperty('--glitch-shadow');
  }
- // Matrix blends each pixel toward navy without removing its alpha.
- function tint(doc,amount){
-   let m=doc.getElementById('wake-photo-matrix');
-   if(!m){const s=doc.createElementNS(NS,'svg');s.setAttribute('width','0');s.setAttribute('height','0');s.setAttribute('aria-hidden','true');s.style.position='absolute';const defs=doc.createElementNS(NS,'defs'),f=doc.createElementNS(NS,'filter');f.id='wake-photo-tint';f.setAttribute('color-interpolation-filters','sRGB');m=doc.createElementNS(NS,'feColorMatrix');m.id='wake-photo-matrix';f.append(m);defs.append(f);s.append(defs);doc.body.append(s)}
-   const k=1-amount,r=21/255*amount,g=22/255*amount,b=37/255*amount;
-   m.setAttribute('values',[k,0,0,0,r,0,k,0,0,g,0,0,k,0,b,0,0,0,1,0].join(' '));
+
+ // Two quadratic-like curves: accelerate into the cut, decelerate after it.
+ const WAKE_MS=270, IN_CURVE='cubic-bezier(.55,.085,.68,.53)', OUT_CURVE='cubic-bezier(.25,.46,.45,.94)';
+ const props=['color','backgroundColor','borderTopColor','borderRightColor','borderBottomColor','borderLeftColor','outlineColor','fill','stroke','opacity','filter'];
+ const pastel=['#e9c0db','#d7c5f0','#c3d3ee','#e2d1f3'];
+ const shadowInk=['#5e3659','#51406f','#3b496b','#694157'];
+ const parseColor=v=>{
+   if(/^#[0-9a-f]{6}$/i.test(v))return [1,3,5].map(i=>parseInt(v.slice(i,i+2),16)).concat(1);
+   const m=v.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)$/);
+   return m?[+m[1],+m[2],+m[3],m[4]===undefined?1:+m[4]]:null;
+ };
+ function blend(a,b,t){const x=parseColor(a),y=parseColor(b);if(!x||!y)return b;
+   return 'rgba('+x.slice(0,3).map((v,i)=>Math.round(v+(y[i]-v)*t)).join(',')+','+(x[3]+(y[3]-x[3])*t).toFixed(4)+')';
  }
- let previous=root().dataset.mode,pending=null,generation=0,guard=0,finish=0,raf=0;
+ // Snapshot actual computed colors, including inline MathML/SVG colors.
+ // Keep traversal in DOM order and ignore non-painted nodes/definitions.
+ function capture(){
+   const main=document.querySelector('main'),els=[root(),document.body,...(main?[main,...main.querySelectorAll('*')]:[])];
+   const result=new Map();
+   for(const el of els){
+     if(el.closest('[hidden],.sr-only,script,style,defs,clipPath,mask,.dream-mosaic')||!el.getClientRects().length)continue;
+     const st=getComputedStyle(el);if(st.display==='none'||st.visibility==='hidden')continue;
+     const a={};for(const p of props){
+       if(p==='fill'||p==='stroke'){if(!(el instanceof SVGElement))continue}
+       if(p.startsWith('border')){const side=p.slice(6,-5);if(parseFloat(st['border'+side+'Width'])===0)continue}
+       if(p==='outlineColor'&&st.outlineStyle==='none')continue;
+       if(p==='filter'&&!el.matches('img:not(.portrait),.dream-layer--art,.character-slot'))continue;
+       if(p==='opacity'&&!el.matches('img:not(.portrait),.dream-layer,.character-slot,.dream-caption,.meta,.section-link,.contact,.summary'))continue;
+       a[p]=st[p];
+     }
+     result.set(el,a);
+   }
+   return result;
+ }
+ function vary(a,b,el,i,incoming){
+   const tint=incoming?shadowInk[i%shadowInk.length]:pastel[i%pastel.length];
+   const p=.63+((i*37+11)%13)/20; // 63–123% of nominal 20% endpoint
+   const out={...b};
+   for(const k of Object.keys(b)){
+     if(k==='opacity'||k==='filter')continue;
+     if(!parseColor(a[k]||'')||!parseColor(b[k]||''))continue;
+     const base=blend(a[k],b[k],p);
+     const c=parseColor(base);
+     // Stable small deviations, no random changes mid-animation. Leave the
+     // two canvas layers on exactly the same color, avoiding visible seams.
+     out[k]=(el===root()||el===document.body||!c||c[3]<.01)?b[k]:
+       blend(base,tint,k==='backgroundColor'?.07: .045+((i*7)%5)*.025);
+   }
+   if('opacity' in b){
+     const op=Number(b.opacity);out.opacity=String(Math.max(0,Math.min(1,op*(.84+((i*11)%7)*.025))));
+   }
+   // No dark veil on the portrait. Other artwork gets a gentle color wash
+   // through saturation/brightness rather than a costly full SVG filter.
+   if('filter' in b)out.filter=incoming?'saturate(.8) brightness(.93)':'saturate(.76) brightness(1.06)';
+   return out;
+ }
+ let wakeAnimations=[],restoreNative=null;
+ function cancelWake(){for(const a of wakeAnimations){try{a.cancel()}catch{}}wakeAnimations=[]}
+ function animateWake(from,to,incoming){
+   cancelWake();let i=0;
+   for(const [el,target] of to){
+     const original=from.get(el);if(!original)continue;
+     const endpoint=incoming?vary(target,original,el,i++,true):vary(original,target,el,i++,false);
+     const a=incoming?endpoint:original,b=incoming?target:endpoint;
+     const f={},t={};for(const k of Object.keys(b)){if(a[k]!==undefined&&a[k]!==b[k]){f[k]=a[k];t[k]=b[k]}}
+     if(!Object.keys(f).length)continue;
+     try{wakeAnimations.push(el.animate([f,t],{duration:WAKE_MS,easing:incoming?OUT_CURVE:IN_CURVE,fill:'both'}))}catch{}
+   }
+ }
+ // Astro 5.18.2 starts the native view transition after its awaited loader.
+ // Skip its visual snapshot immediately when that *one* wake swap is
+ // requested, rather than waiting for before-swap. Restore the native API
+ // immediately, or on cancellation/timeout; retain Astro's own DOM/history.
+ function skipNextNative(token){
+   if(typeof document.startViewTransition!=='function')return;
+   restoreNative?.();
+   const original=document.startViewTransition,own=Object.getOwnPropertyDescriptor(document,'startViewTransition');
+   let restored=false;
+   const restore=()=>{if(restored)return;restored=true;try{
+     if(document.startViewTransition===once){if(own)Object.defineProperty(document,'startViewTransition',own);else delete document.startViewTransition}
+   }catch{}if(restoreNative===restore)restoreNative=null};
+   function once(...args){restore();const vt=original.apply(this,args);
+     if(token===generation){vt.ready?.catch(()=>{});try{vt.skipTransition()}catch{}}
+     return vt;
+   }
+   try{document.startViewTransition=once;if(document.startViewTransition===once)restoreNative=restore}catch{}
+ }
+ let previous=root().dataset.mode,pending=null,generation=0,guard=0,finish=0;
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const painted=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  function clearMotion(){
-   clearTimeout(guard);clearTimeout(finish);cancelAnimationFrame(raf);
+   clearTimeout(guard);clearTimeout(finish);restoreNative?.();cancelWake();
    delete root().dataset.dreamFrame;delete root().dataset.wakePhase;clearWords(document);
    document.querySelector('.dream-mosaic')?.remove();
-   document.getElementById('wake-photo-tint')?.closest('svg')?.remove();
- }
- function tintTween(from,to,token,duration=280){
-   cancelAnimationFrame(raf);const t0=performance.now();tint(document,from);
-   function tick(now){if(token!==generation||quiet())return;const p=Math.min(1,(now-t0)/duration);tint(document,from+(to-from)*p);if(p<1)raf=requestAnimationFrame(tick)}
-   raf=requestAnimationFrame(tick);
  }
  function armGuard(token){clearTimeout(guard);guard=setTimeout(()=>{if(token===generation)clearMotion()},2500)}
  // Preload visible destination images before the effect, bounded so that
@@ -135,11 +209,14 @@
        styleFrame(document,1);styleFrame(doc,2);
        await painted();await wait(200);
      }else if(from==='personal'&&next==='academic'){
-       tint(document,0);getComputedStyle(document.body).backgroundColor;
-       root().dataset.wakePhase='out';tintTween(0,.2,token);
-       tint(doc,.8);doc.documentElement.dataset.wakePhase='hold-in';
-       await painted();await wait(280);
-       if(valid())root().dataset.wakePhase='hold-out';
+       // All loading is finished before the animation begins. Set target
+       // styles and install starting keyframes in the same JS turn.
+       const before=capture();
+       root().dataset.wakePhase='out';
+       const end=capture();animateWake(before,end,false);
+       doc.documentElement.dataset.wakePhase='hold-in';
+       await wait(WAKE_MS);
+       if(valid())skipNextNative(token)
      }
      if(!valid()&&token===generation)clearMotion();
    };
@@ -161,11 +238,14 @@
    if(token!==generation||next!==root().dataset.mode||quiet())return;
    armGuard(token);
    if(next==='academic'){
-     if(root().dataset.wakePhase!=='hold-in'){tint(document,.8);root().dataset.wakePhase='hold-in'}
-     await painted();if(token!==generation||quiet())return;
-     getComputedStyle(document.body).backgroundColor;
-     root().dataset.wakePhase='in';tintTween(.8,0,token);
-     finish=setTimeout(()=>{if(token===generation)clearMotion()},300);return;
+     // Do not wait for page-load, a timer, or another animation frame:
+     // compute the incoming start/end and begin easing before the next paint.
+     cancelWake();
+     if(root().dataset.wakePhase!=='hold-in')root().dataset.wakePhase='hold-in';
+     const from=capture();
+     root().dataset.wakePhase='in';
+     const to=capture();animateWake(from,to,true);
+     finish=setTimeout(()=>{if(token===generation)clearMotion()},WAKE_MS+20);return;
    }
    if(root().dataset.dreamFrame!=='2')styleFrame(document,2);
    await painted();await wait(200);if(token!==generation||quiet())return;
