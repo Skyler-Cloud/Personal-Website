@@ -122,3 +122,7 @@ The public site has one reserved development path: https://lillian.wang/preview/
 ## Root-domain migration
 
 The deployment workflow derives the base path from GitHub Pages configuration or the repository name. Renaming the repository to `skyler-cloud.github.io` switches the public base to `/`, with the existing Academic homepage as the root and Personal at `/personal/`. The hosted development preview is at `/preview/`. After renaming, confirm GitHub Actions is the Pages source and manually run Verify and deploy website on main if needed. Existing project-site URLs are not automatically redirected by GitHub Pages.
+
+### Comic-inspired design (preview)
+
+Panel Break academic mode uses neutral grayscale, Georgia headings, compact system typography, fine panel dividers, static paper grain and graphite-like headings. Afterimage personal mode uses dark indigo, a highlighted profile block and a separately layered dream scene. Temporary palette in design/tokens.json and expressive colors in styles/site.css. The dream scene and character slot are prepared for future original PNG overlays; no comic artwork is published automatically. Mode changes use randomized one-second chromatic separation on entry and a shorter color drain on return, with reduced-motion support. The current procedural textures are placeholders, not the actual Procreate brush.

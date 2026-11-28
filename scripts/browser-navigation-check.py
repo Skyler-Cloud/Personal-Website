@@ -41,6 +41,7 @@ with tempfile.TemporaryDirectory() as temp:
                     nav = page.get_by_role("navigation", name="Website section")
                     navigate("Personal", "personal/", nav)
                     expect(page.locator("html")).to_have_attribute("data-mode", "personal")
+                    assert page.locator("html").get_attribute("data-mode-motion") is None
                     assert page.locator(".home-layout").evaluate("(el)=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 1
                     assert page.locator("h1").evaluate("(el)=>parseFloat(getComputedStyle(el).fontSize)") <= 38
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
@@ -82,6 +83,21 @@ with tempfile.TemporaryDirectory() as temp:
                         print("WebKit reported the expected reduced-motion transition abort")
                     assert not unexpected, unexpected
                     page.close()
+                    motion = browser.new_page(viewport={"width":1280,"height":900}, reduced_motion="no-preference")
+                    motion.goto(url)
+                    motion.wait_for_load_state("networkidle")
+                    expect(motion.locator(".home-profile")).to_be_visible()
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
+                    motion.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal",exact=True).click()
+                    expect(motion.locator("html")).to_have_attribute("data-mode","personal")
+                    expect(motion.locator("html")).to_have_attribute("data-mode-motion","enter")
+                    expect(motion.locator(".dream-scene")).to_be_visible()
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(35, 38, 61)"
+                    motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
+                    motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
+                    expect(motion.locator("html")).to_have_attribute("data-mode-motion","exit")
+                    motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
+                    motion.close()
                     plain = browser.new_page(java_script_enabled=False)
                     plain.goto(url)
                     plain.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal", exact=True).click()

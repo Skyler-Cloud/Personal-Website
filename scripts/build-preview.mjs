@@ -12,7 +12,7 @@ const markdown=s=>execFileSync('python',[join(root,'scripts/preview-markdown.py'
 const css=tokenCSS(new URL('../design/tokens.json',import.meta.url))+'\n'+await readFile(join(pub,'styles/site.css'),'utf8');
 const js=await readFile(join(pub,'scripts/site.js'),'utf8');
 
-const fonts='<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Play:wght@700&display=swap">';
+const fonts='';
 const foot=p=>renderFooter({base:'/',mode:p.mode,markdown:s=>s});
 const head=(title,description,mode='academic')=>`<!doctype html><html lang="en" data-mode="${mode}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)}</title><meta name="description" content="${escape(description)}">${fonts}<style>${css}</style></head><body><a class="skip-link" href="#main">Skip to content</a><main id="main">`;
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});await cp(pub, out,{recursive:true,filter:src=>src!==join(pub,'assets')});await cp(join(root,'content/assets'),join(out,'assets'),{recursive:true});

@@ -27,3 +27,91 @@ html[data-mode=academic] .writing-entry h3 a{color:var(--heading)}
 .latex-document a{font-weight:600;text-decoration:underline}
 
 .latex-html{min-width:0}.latex-html math[display=block]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:6px 0}.latex-html figure{margin:12px 0}.latex-html figcaption{font-size:12px;color:var(--muted)}.latex-html .theorem,.latex-html .lemma,.latex-html .definition,.latex-html .proposition,.latex-html .corollary{border-left:2px solid var(--rose-line);padding-left:12px;margin:12px 0}.latex-html .proof{margin:12px 0}.latex-html .references{font-size:13px}.latex-html [id]{scroll-margin-top:12px}
+
+/* Panel Break (waking) + Afterimage (dreaming). Provisional palette.
+   Art layers are separate, so custom PNGs can replace them without reflow. */
+:root{
+ --express-cyan:#28b8d6;--express-magenta:#d95197;--express-yellow:#e9c83a;
+ --express-green:#50b776;--express-red:#e86e59;--express-violet:#7959c8;
+ --reveal:linear-gradient(90deg,#007c99,#6740ac,#a72f70,#b34530,#8b6900,#237c49);
+ --paper-grain-opacity:.12;--graphite-strength:.28;
+}
+html[data-mode=personal]{color-scheme:dark;--reveal:linear-gradient(90deg,#49cce6,#aa90ff,#f188bd,#f18a69,#f3d45e,#70d89b)}
+html[data-mode=academic]{color-scheme:light}
+body{min-height:100vh;isolation:isolate;font-family:var(--font-body),system-ui,sans-serif}
+main{position:relative;z-index:1;width:min(100%,1060px);padding:18px 24px 40px}
+h1{font-size:clamp(29px,7vw,38px);font-style:italic;font-weight:400;letter-spacing:-.04em}
+h2{font-size:21px;font-style:normal;font-weight:400}
+h3{font-size:17px;font-style:normal;font-weight:400}
+.gallery-head{padding-bottom:7px;border-bottom-width:1px}
+.gallery-head h2{font:400 21px/1.15 var(--font-heading),serif;text-transform:none;color:var(--heading)}
+.meta{font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.025em}
+.section-head{padding-bottom:7px}.section-link{font-size:11px;color:var(--muted)}
+.writing-entry{padding:10px 0;gap:5px}
+.mode-nav{gap:5px;border-bottom:1px solid var(--rule);padding-bottom:6px;flex-wrap:nowrap}
+.mode-nav .site-mark{margin-right:auto;color:var(--muted);display:flex;align-items:center}
+.mode-nav a{min-height:40px;padding:8px 9px;border-radius:0;color:var(--muted)}
+.mode-nav a[aria-current=true]{background:none;color:var(--heading);font-weight:600;text-decoration:underline;text-underline-offset:5px}
+main>.mode-nav{margin-bottom:24px}
+.page-nav{border-bottom:1px solid var(--rule);padding-bottom:6px}
+.page-nav .mode-nav{border:0;padding:0}.page-nav .site-mark{display:none}
+html[data-mode=personal] .site-mark{color:#b3a6e8}
+.portrait-stage{position:relative;isolation:isolate;flex:none;width:max-content;max-width:100%}
+.portrait{position:relative;z-index:1;width:136px;aspect-ratio:4/5}
+.character-slot{position:absolute;pointer-events:none;z-index:2;inset:0;overflow:visible}
+.home-profile .bio{line-height:1.55}
+html[data-mode=academic] .portrait{border:2px solid #333;transform:rotate(-1deg);filter:grayscale(1);transition:filter .55s}
+html[data-mode=academic] .portrait:hover,html[data-mode=academic] .portrait:focus-visible{filter:none}
+html[data-mode=academic] body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--paper-grain-opacity);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.83' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23n)' opacity='.48' d='M0 0h160v160H0z'/%3E%3C/svg%3E")}
+html[data-mode=academic] .masthead h1,html[data-mode=academic] .section-head h2{
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='.28'/%3E%3C/svg%3E");
+ background-color:var(--heading);background-clip:text;-webkit-background-clip:text;color:transparent;
+}
+@supports not (background-clip:text){html[data-mode=academic] .masthead h1,html[data-mode=academic] .section-head h2{color:var(--heading);background:none}}
+html[data-mode=academic] a{transition:color .4s,text-decoration-color .4s}
+html[data-mode=academic] a:hover,html[data-mode=academic] a:focus-visible{color:#76429b}
+.writing-entry h3 a{position:relative;display:inline;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+@supports (background-clip:text){
+ .writing-entry:hover h3 a,.writing-entry:focus-within h3 a{background-image:var(--reveal);background-clip:text;-webkit-background-clip:text;color:transparent;text-decoration:none}
+}
+.writing-entry h3 a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--reveal);transform:scaleX(0);transform-origin:left;transition:transform .45s ease}
+.writing-entry:hover h3 a::after,.writing-entry:focus-within h3 a::after{transform:scaleX(1)}
+html[data-mode=personal] .home-profile{padding:18px;background:var(--rose-surface)}
+html[data-mode=personal] .home-profile h1{font-size:clamp(27px,6vw,34px)}
+html[data-mode=personal] .home-profile .portrait{width:112px}
+html[data-mode=personal] .home-profile .intro{flex-direction:column}
+html[data-mode=personal] .dream-scene{height:clamp(105px,16vw,165px);position:relative;isolation:isolate;margin:0 0 24px;background:#10111d;overflow:clip;pointer-events:none}
+.dream-layer{position:absolute;inset:0;pointer-events:none}
+.dream-layer--mist{background:radial-gradient(ellipse at 78% 48%,#42316f88 0%,transparent 47%),radial-gradient(ellipse at 20% 82%,#263f7588 0%,transparent 50%)}
+.dream-layer--fragments{background:radial-gradient(ellipse at 22% 18%,#7777bc44 0%,transparent 23%),radial-gradient(ellipse at 87% 80%,#8a5ca44a 0%,transparent 24%)}
+.dream-layer--art{background-size:cover;background-position:center;opacity:.85}
+.dream-caption{position:absolute;bottom:11px;left:13px;font:10px ui-monospace,monospace;letter-spacing:.06em;color:#c7c4dc}
+html[data-mode=personal] .article-body a{color:var(--link)}
+@media(min-width:800px){
+ .home-layout{grid-template-columns:minmax(220px,.84fr) minmax(0,1.65fr);gap:32px}
+ html[data-mode=academic] .home-profile{border-right:1px solid var(--rule);padding-right:24px;min-height:340px}
+ .home-profile .portrait{width:136px}
+ html[data-mode=personal] .home-profile .portrait{width:112px}
+}
+@media(max-width:799px){.home-content{margin-top:22px}.home-content>.home-section:first-child{margin-top:0}.home-profile .intro{flex-direction:column}}
+@media(max-width:400px){main{padding-inline:16px}}
+/* One-shot, local chromatic separation; no full-screen flashes or animated grain. */
+html[data-mode-motion=enter] main [data-reveal-motion]{animation:dream-breakthrough .86s var(--dream-delay,0ms) both}
+html[data-mode-motion=exit] main [data-reveal-motion]{animation:dream-drain .68s var(--dream-delay,0ms) both}
+html[data-mode-motion=enter] .dream-scene{animation:dream-space .85s both}
+@keyframes dream-breakthrough{
+ 0%{color:#aaa;text-shadow:none}
+ 17%{color:var(--glitch-a);text-shadow:1.8px 0 #28b8d6,-1.8px .4px #d95197}
+ 32%{color:var(--glitch-b);text-shadow:-1.3px 0 #28b8d6,1.3px 0 #e86e59}
+ 49%{color:var(--glitch-c);text-shadow:.8px 0 #7959c8,-.8px 0 #50b776}
+ 72%{color:var(--glitch-b);text-shadow:.4px 0 #28b8d6,-.4px 0 #d95197}
+ 100%{color:inherit;text-shadow:none}
+}
+@keyframes dream-drain{0%{filter:saturate(1.2);text-shadow:.8px 0 #28b8d6,-.8px 0 #d95197;color:var(--glitch-a)}100%{filter:saturate(0);text-shadow:none;color:inherit}}
+@keyframes dream-space{0%{filter:grayscale(1)}28%{filter:grayscale(.7)}52%{filter:saturate(1.25)}100%{filter:none}}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
+}
+@media(forced-colors:active){
+ html[data-mode=academic] .masthead h1,html[data-mode=academic] .section-head h2,.writing-entry h3 a{color:CanvasText!important;background:none!important}
+}
