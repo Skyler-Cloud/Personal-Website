@@ -128,55 +128,64 @@ html[data-mode=academic] .writing-entry h3 a::after{background:var(--hover-bands
 }
 
 
-/* Dream entry: a fixed rectangular mosaic, behind the actual page. Each
-   frame adds exactly 25% of the viewport area; previous tiles never move.
-   Three held poses, strong chromatic separation, no per-letter flicker. */
-html[data-dream-frame] body{background:#fff}
-html[data-dream-frame] body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-size:100% 100%;background-repeat:no-repeat}
-html[data-dream-frame] body::before{opacity:.05}
-html[data-dream-frame] main :is(h1,.section-head h2,.writing-entry h3 a,.writing-entry h3:not(:has(a))){
- background-image:none!important;-webkit-text-fill-color:currentColor!important;
- text-decoration:none;transition:none!important;
-}
-html[data-dream-frame="1"] main :is(h1,.section-head h2,.writing-entry h3 a,.writing-entry h3:not(:has(a))){color:#6537bd;text-shadow:2.5px 0 #28b8d6,-2.5px .5px #d95197}
-html[data-dream-frame="2"] main :is(h1,.section-head h2,.writing-entry h3 a,.writing-entry h3:not(:has(a))){color:#d95197;text-shadow:-2.5px -2.5px #28b8d6,2px 2px #7959c8}
-html[data-dream-frame="3"] main :is(h1,.section-head h2,.writing-entry h3 a,.writing-entry h3:not(:has(a))){color:#7959c8;text-shadow:0 2.5px #28b8d6,0 -2.5px #d95197}
-html[data-dream-frame] .writing-entry h3 a::after{transform:scaleX(0)}
-html[data-mode=personal][data-dream-frame] .home-profile{background:rgba(99,75,151,.38)}
-/* Keep ordinary copy visible on the mixed light/dark transient background. */
-html[data-dream-frame] main :is(.bio,.summary,.meta,.section-link,.mode-nav a,.site-footer a,.writing-entry p){color:#3b3152;text-shadow:0 0 3px #fff,0 0 2px #fff}
-html[data-dream-frame="1"] body::after{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2012%22%20preserveAspectRatio%3D%22none%22%20shape-rendering%3D%22crispEdges%22%20fill%3D%22%23151625%22%3E%3Crect%20x%3D%2211%22%20y%3D%223%22%20width%3D%222%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%2210%22%20width%3D%225%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%226%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%222%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%228%22%20width%3D%221%22%20height%3D%223%22%2F%3E%3C%2Fsvg%3E")}
-html[data-dream-frame="2"] body::after{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2012%22%20preserveAspectRatio%3D%22none%22%20shape-rendering%3D%22crispEdges%22%20fill%3D%22%23151625%22%3E%3Crect%20x%3D%2211%22%20y%3D%223%22%20width%3D%222%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%2210%22%20width%3D%225%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%226%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%222%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%228%22%20width%3D%221%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%221%22%20width%3D%221%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%229%22%20width%3D%222%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%220%22%20width%3D%225%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%226%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%225%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%222%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%2F%3E%3C%2Fsvg%3E")}
-html[data-dream-frame="3"] body::after{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2012%22%20preserveAspectRatio%3D%22none%22%20shape-rendering%3D%22crispEdges%22%20fill%3D%22%23151625%22%3E%3Crect%20x%3D%2211%22%20y%3D%223%22%20width%3D%222%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%2210%22%20width%3D%225%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%220%22%20width%3D%226%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%222%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%228%22%20width%3D%221%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%221%22%20width%3D%221%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%229%22%20width%3D%222%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%220%22%20width%3D%225%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%224%22%20width%3D%226%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%225%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%222%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%227%22%20width%3D%222%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%225%22%20width%3D%222%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%226%22%20height%3D%221%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%2213%22%20y%3D%226%22%20width%3D%223%22%20height%3D%224%22%2F%3E%3Crect%20x%3D%2211%22%20y%3D%221%22%20width%3D%224%22%20height%3D%222%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%222%22%20height%3D%223%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%229%22%20width%3D%221%22%20height%3D%222%22%2F%3E%3C%2Fsvg%3E")}
 
-/* Wake: morph the actual semantic colors and artwork, not a screen overlay.
-   Both halves share the same intermediate palette, including body background,
-   text, links, dividers and translucent surfaces. */
-html[data-wake-phase=out],html[data-wake-phase=hold]{
- --page:#a09aaf;--body:#44394f;--heading:#392c4a;--link:#493858;
- --muted:#51455e;--rule:#867d98;--rose-text:#493858;--orange-text:#59404e;
- --rose-line:#867d98;--peach-line:#867d98;--rose-surface:#b0a9bd;
- --peach-surface:#b0a9bd;--lavender-surface:#b0a9bd;
+/* Solid document canvas, including during Astro swaps and scroll overshoot. */
+html{background-color:var(--page)}
+/* A single inline SVG mosaic per document. No image decoding, interpolated
+   backgrounds, or 25% intermediate pose. Frame 1 remains paper-white. */
+.dream-mosaic{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+html[data-dream-frame="2"] .dream-mosaic,html[data-dream-frame="3"] .dream-mosaic{display:block}
+.dream-mosaic .mosaic-extra{visibility:hidden}
+html[data-dream-frame="3"] .dream-mosaic .mosaic-extra{visibility:visible}
+html[data-dream-frame] body{background-color:#fff}
+html[data-dream-frame] body::before{opacity:.05}
+html[data-dream-frame] main,html[data-dream-frame] main *,
+html[data-dream-frame] main *::before,html[data-dream-frame] main *::after{transition:none!important;animation:none!important}
+html[data-dream-frame] main :is(h1,h2,h3,h4,h5,h6,p,a,span,li,dt,dd,th,td,button,summary,blockquote,pre,code,math,figcaption,label,.meta,.bio,.contact){
+ color:var(--glitch-base,#6537bd);-webkit-text-fill-color:currentColor!important;
+ text-shadow:var(--glitch-shadow,2.5px 0 #28b8d6,-2.5px .5px #d95197);
 }
-html[data-wake-phase] body,
-html[data-wake-phase] main :is(h1,h2,h3,h4,p,a,span,li,blockquote,button,pre,code,section,article,header,nav,footer,.home-profile,.dream-scene,.writing-entry,.properties,.section-head,.summary-wash,.rating-wash,.gallery-strip,.art-detail,.filters,.education-entry){
- transition:background-color 500ms linear,color 500ms linear,border-color 500ms linear,opacity 500ms linear,filter 500ms linear,text-shadow 500ms linear;
+html[data-dream-frame] main :is(.masthead h1,.section-head h2,.writing-entry h3 a){background-image:none!important;text-decoration:none}
+html[data-dream-frame] .writing-entry h3 a::after{transform:scaleX(0)}
+html[data-dream-frame] .glitch-word{
+ box-decoration-break:clone;-webkit-box-decoration-break:clone;
+ background-color:var(--glitch-word-bg,transparent)!important;
+ color:var(--glitch-word-ink,var(--glitch-base))!important;
+ text-shadow:var(--glitch-word-shadow,var(--glitch-shadow))!important;
 }
-html[data-wake-phase] main :is(img,.dream-layer,.character-slot,.dream-caption){
- transition:opacity 500ms linear,filter 500ms linear;
+html[data-dream-frame] [data-glitch-block]{background-color:var(--glitch-block-bg)!important;border-color:var(--glitch-block-line)!important}
+html[data-dream-frame] main :is(.section-head,.writing-entry,.mode-nav,.site-footer,.filters){border-color:var(--glitch-base)}
+html[data-dream-frame] .dream-scene{background-color:#25223d}
+html[data-dream-frame] .dream-layer{opacity:.72}
+/* Wake is an actual per-element color morph. 0 -> 20%, cut to 80% -> 100%.
+   The document background is itself painted, never a transparent canvas. */
+html[data-wake-phase=out],html[data-wake-phase=hold-out]{
+ --page:#444552;--body:#cbc9cf;--heading:#c9c7ce;--link:#aeaacb;--muted:#a8a5ba;
+ --rule:#605f71;--rose-text:#b2aed1;--orange-text:#c2a0ac;--rose-line:#605f71;--peach-line:#69657d;
+ --rose-surface:#4c4e60;--peach-surface:#564e5f;--lavender-surface:#505268;
 }
-html[data-wake-phase=out] main :is(img,.dream-layer,.character-slot,.dream-caption),
-html[data-wake-phase=hold] main :is(img,.dream-layer,.character-slot,.dream-caption){opacity:0}
-html[data-wake-phase=out] .dream-scene,html[data-wake-phase=hold] .dream-scene{background:var(--page)}
-html[data-wake-phase=out] .home-profile,html[data-wake-phase=hold] .home-profile{background:transparent}
-html[data-wake-phase] main :is(.masthead h1,.section-head h2,.writing-entry h3 a){
- background-image:none!important;color:var(--heading);-webkit-text-fill-color:currentColor!important;text-shadow:none;
+html[data-wake-phase=hold-in]{
+ --page:#d0d0d3;--body:#393441;--heading:#382e45;--link:#453b55;--muted:#777084;
+ --rule:#a09fab;--rose-text:#635a76;--orange-text:#63434f;--rose-line:#a09fab;--peach-line:#a29eab;
+ --rose-surface:#c7c7c9;--peach-surface:#c6c3c9;--lavender-surface:#c7c7ca;
 }
+html[data-wake-phase] body,html[data-wake-phase] main,html[data-wake-phase] main *{
+ transition:background-color 280ms ease,color 280ms ease,border-color 280ms ease,outline-color 280ms ease,fill 280ms ease,stroke 280ms ease,opacity 280ms ease,box-shadow 280ms ease,text-shadow 280ms ease;
+}
+html[data-wake-phase=hold-out],html[data-wake-phase=hold-in],
+html[data-wake-phase=hold-out] *,html[data-wake-phase=hold-in] *{transition:none!important}
+html[data-wake-phase=out],html[data-wake-phase=in]{transition:background-color 280ms ease}
+html[data-wake-phase=out] .home-profile,html[data-wake-phase=hold-out] .home-profile{background-color:rgba(117,104,155,.23)}
+html[data-wake-phase=out] .dream-scene,html[data-wake-phase=hold-out] .dream-scene{background-color:#41414f}
+html[data-wake-phase=out] .dream-layer,html[data-wake-phase=hold-out] .dream-layer{opacity:.8}
+html[data-wake-phase] main :is(.masthead h1,.section-head h2,.writing-entry h3 a){background-image:none!important;color:var(--heading);-webkit-text-fill-color:currentColor!important;text-shadow:none}
 html[data-wake-phase] .writing-entry h3 a::after{transform:scaleX(0)}
-html[data-wake-phase=hold] body,html[data-wake-phase=hold] main *{transition:none!important}
-html[data-wake-phase=hold] body::before{opacity:0}
-html[data-wake-phase=in] body::before{transition:opacity 500ms linear}
+/* SVG color matrix tints actual image pixels while preserving alpha. */
+html[data-wake-phase] main :is(img,.dream-layer--art,.character-slot){filter:url(#wake-photo-tint)}
+html[data-mode=academic][data-wake-phase] .portrait{filter:grayscale(1) url(#wake-photo-tint)}
+html[data-mode=academic][data-wake-phase=hold-in] body::before{opacity:0}
+html[data-mode=academic][data-wake-phase=in] body::before{transition:opacity 280ms ease}
 @media(prefers-reduced-motion:reduce),(forced-colors:active){
- html[data-dream-frame] body::after{display:none}
+ .dream-mosaic{display:none!important}
  html[data-wake-phase] body,html[data-wake-phase] main *{transition:none!important}
 }

@@ -90,23 +90,29 @@ with tempfile.TemporaryDirectory() as temp:
                     expect(motion.locator(".home-profile")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
                     # Observe the actual outgoing and incoming DOM states.
-                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
+                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
                     link = motion.locator(".writing-entry h3 a").first
                     bands = link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')")
                     assert bands.count("#")==3
                     link.hover()
                     ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
                     assert ink in bands
-                    motion.mouse.move(2,2)
+                    motion.locator(".writing-entry .properties").first.hover()
                     link.hover()
                     next_ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
                     assert next_ink != ink and next_ink in bands
+                    motion.mouse.move(2,2)
+                    link.hover()
+                    third_ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
+                    assert len({ink,next_ink,third_ink})==3
                     assert link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')") == bands
                     assert link.evaluate("(el)=>getComputedStyle(el).backgroundImage") == "none"
                     motion.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal",exact=True).click()
                     motion.wait_for_function("window.__frames.some(x=>x[0]==='personal'&&x[1]==='3')")
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-dream-frame')")
                     assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1') && window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
+                    assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1'&&x[2]>0)")
+                    assert motion.locator(".glitch-word").count() == 0
                     expect(motion.locator(".dream-scene")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     personal_link = motion.locator(".writing-entry h3 a").first
@@ -116,7 +122,7 @@ with tempfile.TemporaryDirectory() as temp:
                     motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
                     motion.wait_for_function("window.__wake.some(x=>x[0]==='academic'&&x[1]==='in')")
                     assert motion.evaluate("window.__wake.some(x=>x[0]==='personal'&&x[1]==='out')")
-                    assert motion.evaluate("window.__wakeMidpoint") == {"mode":"academic","phase":"hold","background":"rgb(160, 154, 175)"}
+                    assert motion.evaluate("window.__wakeMidpoint") == {"mode":"academic","phase":"hold-in","background":"rgb(208, 208, 211)"}
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase')")
                     expect(motion.locator("html")).to_have_attribute("data-mode","academic")
                     assert motion.locator("body").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(255, 255, 255)"
