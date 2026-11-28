@@ -215,3 +215,16 @@ html[data-mode=personal] .writing-entry:is(:hover,:focus-within) h3 a{background
 html[data-mode=personal] .writing-entry h3 a::after{display:none}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within){border-bottom-color:transparent}
 @media(forced-colors:active){.dream-entry-frame{display:none}html[data-mode=personal] .writing-entry:is(:hover,:focus-within){outline:1px solid Highlight}html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) :is(h3,a,p,span,strong,em,div,small,time){color:CanvasText}}
+
+/* Lift the entire cut-paper stack, including its text, inside an unchanged
+   hitbox. A small tilt and shadow add depth without moving adjacent rows. */
+.dream-entry-content{position:relative;display:grid;gap:inherit;min-width:0;isolation:isolate;transform-origin:center;transition:transform 150ms cubic-bezier(.2,.75,.25,1)}
+.dream-entry-content .dream-entry-frame{inset:-9px -7px -8px;height:calc(100% + 17px);transition:opacity 100ms ease-out,filter 150ms ease-out}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within){z-index:2}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content{transform:translateY(-2px) rotate(-.8deg) scale(1.018)}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-frame{filter:drop-shadow(2px 5px 3px rgba(0,0,0,.32))}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content :is(h3,a,p,span,strong,em,small,time){text-shadow:0 1px 1px #0003}
+@media(prefers-reduced-motion:reduce),(forced-colors:active){
+ .dream-entry-content{transition:none!important}
+ html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content{transform:none}
+}

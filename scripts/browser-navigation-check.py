@@ -137,8 +137,13 @@ with tempfile.TemporaryDirectory() as temp:
                     expect(motion.locator(".dream-scene")).to_be_hidden()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     personal_link = motion.locator(".writing-entry h3 a").first
-                    personal_link.hover()
                     personal_row = personal_link.locator("xpath=ancestor::article")
+                    motion.mouse.move(2,2)
+                    row_before = personal_row.bounding_box()
+                    personal_link.hover()
+                    motion.wait_for_function("getComputedStyle(document.querySelector('.writing-entry:hover .dream-entry-content')).transform !== 'none'")
+                    assert personal_row.bounding_box() == row_before
+                    assert personal_row.locator(".dream-entry-content").evaluate("(el)=>getComputedStyle(el).transform") != "none"
                     expect(personal_link).to_have_css("color","rgb(255, 255, 255)")
                     expect(personal_link).to_have_css("background-image","none")
                     expect(personal_row.locator(".dream-entry-frame")).to_have_css("opacity","1")

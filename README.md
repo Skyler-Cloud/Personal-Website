@@ -144,3 +144,5 @@ Homepage alignment: both modes share name size, profile padding, upright 136px p
 Profile photographs now tilt −2° Academic / +2° Personal around the same center, with the flip layer rotating to upright at the seam and back to the destination tilt. Personal writing hover/focus uses two offset angular SVG outlines around the complete article row; two distinct random colors are chosen on each re-entry, text is white, and the gradient underline is removed. No layout shift or change to Academic hover.
 
 Personal hover revision: both angular panels are solid fills, not outlines. A bright contrasting backing hue and a darker saturated front hue are randomly paired on re-entry to keep white text legible.
+
+Personal writing hover now lifts the whole two-color cut-paper card and its white text by 2px, scales it by 1.018, and tilts it −0.8° with a soft shadow. The outer row remains fixed to prevent reflow; reduced-motion and forced-colors users get a stationary highlight.
