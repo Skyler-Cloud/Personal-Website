@@ -189,3 +189,8 @@ html[data-mode=academic][data-wake-phase=in] body::before{transition:opacity 280
  .dream-mosaic{display:none!important}
  html[data-wake-phase] body,html[data-wake-phase] main *{transition:none!important}
 }
+
+/* Color details with formerly hard-coded colors also participate in waking. */
+html[data-wake-phase=out] .dream-caption,html[data-wake-phase=hold-out] .dream-caption{color:var(--muted)}
+html[data-wake-phase=out] .site-mark,html[data-wake-phase=hold-out] .site-mark{color:var(--muted)}
+html[data-wake-phase=hold-in] .portrait{border-color:var(--rule)}

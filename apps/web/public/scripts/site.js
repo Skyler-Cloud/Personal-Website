@@ -27,7 +27,11 @@
    prepareHover();const c=(a.dataset.hoverPalette||'').split(',');if(c.length!==3)return;
    const i=(Number(a.dataset.hoverIndex||0)+1)%3;a.dataset.hoverIndex=String(i);a.style.setProperty('--hover-color',c[i]);
  }
- document.addEventListener('pointerover',e=>{const a=titleFrom(e.target);if(a&&a!==titleFrom(e.relatedTarget))cycle(a)});
+ function entryFrom(t){return t instanceof Element?t.closest('.writing-entry'):null}
+ document.addEventListener('PointerEvent' in window?'pointerover':'mouseover',e=>{
+   const row=entryFrom(e.target),title=titleFrom(e.target);
+   if(row&&(row!==entryFrom(e.relatedTarget)||title&&title!==titleFrom(e.relatedTarget)))cycle(title||row.querySelector('h3 a'));
+ });
  document.addEventListener('focusin',e=>{const a=titleFrom(e.target);if(a&&a!==titleFrom(e.relatedTarget)&&!a.matches(':hover'))cycle(a)});
  const NS='http://www.w3.org/2000/svg';
  const mosaic50=[[11,3,2,2],[0,11,2,1],[11,10,5,1],[5,0,6,4],[2,2,2,4],[14,11,2,1],[10,8,1,3],[15,1,1,2],[0,9,2,2],[11,0,5,1],[5,4,6,3],[0,0,5,2],[0,2,2,4],[8,8,1,1]], mosaicExtra=[[11,7,2,3],[11,5,2,2],[5,7,6,1],[4,2,1,4],[13,6,3,4],[11,1,4,2],[0,6,2,3],[8,9,1,2]];
@@ -145,7 +149,7 @@
    if(!quiet()&&next.dataset.mode!==root().dataset.mode){
      // Native snapshots can add extra crossfade frames. Skip that animation,
      // while retaining Astro's atomic DOM swap and history handling.
-     const vt=e.viewTransition;vt?.ready?.catch(()=>{});vt?.skipTransition?.();
+     const vt=e.viewTransition;vt?.ready?.catch(()=>{});try{vt?.skipTransition?.()}catch{}
    }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;clearMotion()}
  });
  function detect(){
