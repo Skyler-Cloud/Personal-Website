@@ -95,20 +95,6 @@ html[data-mode=personal] .article-body a{color:var(--link)}
 }
 @media(max-width:799px){.home-content{margin-top:22px}.home-content>.home-section:first-child{margin-top:0}.home-profile .intro{flex-direction:column}}
 @media(max-width:400px){main{padding-inline:16px}}
-/* One-shot, local chromatic separation; no full-screen flashes or animated grain. */
-html[data-mode-motion=enter] main [data-reveal-motion]{animation:dream-breakthrough .86s var(--dream-delay,0ms) both}
-html[data-mode-motion=exit] main [data-reveal-motion]{animation:dream-drain .68s var(--dream-delay,0ms) both}
-html[data-mode-motion=enter] .dream-scene{animation:dream-space .85s both}
-@keyframes dream-breakthrough{
- 0%{color:#aaa;text-shadow:none}
- 17%{color:var(--glitch-a);text-shadow:1.8px 0 #28b8d6,-1.8px .4px #d95197}
- 32%{color:var(--glitch-b);text-shadow:-1.3px 0 #28b8d6,1.3px 0 #e86e59}
- 49%{color:var(--glitch-c);text-shadow:.8px 0 #7959c8,-.8px 0 #50b776}
- 72%{color:var(--glitch-b);text-shadow:.4px 0 #28b8d6,-.4px 0 #d95197}
- 100%{color:inherit;text-shadow:none}
-}
-@keyframes dream-drain{0%{filter:saturate(1.2);text-shadow:.8px 0 #28b8d6,-.8px 0 #d95197;color:var(--glitch-a)}100%{filter:saturate(0);text-shadow:none;color:inherit}}
-@keyframes dream-space{0%{filter:grayscale(1)}28%{filter:grayscale(.7)}52%{filter:saturate(1.25)}100%{filter:none}}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation:none!important;transition:none!important}
 }
@@ -121,8 +107,6 @@ html[data-mode-motion=enter] .dream-scene{animation:dream-space .85s both}
 .dream-layer--art{background-image:var(--dream-art,none)}
 .character-slot{background-image:var(--character-art,none);background-size:contain;background-repeat:no-repeat;background-position:right bottom}
 html[data-mode=academic] .home-profile .bio{max-width:300px}
-html[data-mode-motion=enter] .writing-entry h3 a,html[data-mode-motion=exit] .writing-entry h3 a{transition:none}
-html[data-mode-motion=exit] .masthead h1,html[data-mode-motion=exit] .section-head h2{background:none;color:var(--heading)}
 @media(prefers-reduced-motion:reduce){.dream-layer{animation:none}}
 
 /* Hard-edged color bands, not blended gradients. Academic titles use one
@@ -139,25 +123,36 @@ html[data-mode=academic] .writing-entry:focus-within h3 a{
  text-decoration:none;
 }
 html[data-mode=academic] .writing-entry h3 a::after{background:var(--hover-bands,var(--academic-reveal-default));height:2px}
-html[data-mode-motion] main [data-reveal-motion]{
- background-image:none!important;-webkit-text-fill-color:currentColor!important;
- text-decoration:none;
-}
-html[data-mode-motion] main [data-reveal-motion]::after{transform:scaleX(0)}
-html[data-mode-motion=enter] main [data-reveal-motion]{animation:dream-breakthrough .86s var(--dream-delay,0ms) both}
-html[data-mode-motion=exit] main [data-reveal-motion]{animation:dream-drain .82s var(--dream-delay,0ms) both}
-@keyframes dream-breakthrough{
- 0%{color:#aaa;text-shadow:none}
- 12%{color:var(--glitch-a);text-shadow:2.5px 0 #28b8d6,-2.5px .5px #d95197}
- 26%{color:var(--glitch-b);text-shadow:-2px 0 #28b8d6,2px 0 #e86e59}
- 42%{color:var(--glitch-c);text-shadow:1.5px 0 #7959c8,-1.5px 0 #50b776}
- 68%{color:var(--glitch-b);text-shadow:.7px 0 #28b8d6,-.7px 0 #d95197}
- 100%{color:var(--dream-final);text-shadow:none}
-}
-@keyframes dream-drain{
- 0%{color:var(--glitch-a);text-shadow:1px 0 #28b8d6,-1px 0 #d95197}
- 100%{color:var(--dream-final);text-shadow:none}
-}
 @media(forced-colors:active){
  html[data-mode=academic] .writing-entry h3 a{color:LinkText!important;background:none!important}
 }
+
+/* Three 200ms held poses. No flickering, randomized delays, or moving page.
+   The offset follows right, upper-left, down; only headings carry the effect. */
+html[data-mode-motion=enter] main [data-reveal-motion]{
+ background-image:none!important;-webkit-text-fill-color:currentColor!important;
+ text-decoration:none;transition:none!important;
+ animation:dream-breakthrough 600ms steps(1,end) both;
+}
+html[data-mode-motion=enter] main [data-reveal-motion]::after{transform:scaleX(0)}
+@keyframes dream-breakthrough{
+ 0%{color:var(--glitch-a);text-shadow:1px 0 #8abccc,-.5px 0 #c792b7}
+ 33.333333%{color:var(--glitch-b);text-shadow:-.8px -.8px #8abccc,.5px .5px #c792b7}
+ 66.666667%{color:var(--glitch-c);text-shadow:0 1px #8abccc,0 -.5px #c792b7}
+ 100%{color:var(--dream-final);text-shadow:none}
+}
+/* Wake through a common neutral midpoint. The outgoing and incoming DOM
+   both have the exact same veil at the swap, hiding the layout change. */
+html[data-wake-phase]::after{
+ content:"";position:fixed;inset:0;z-index:2147483647;pointer-events:none;
+ background:#898894;opacity:1;
+}
+html[data-wake-phase=out]::after{animation:wake-out 500ms linear both}
+html[data-wake-phase=in]::after{animation:wake-in 500ms linear both}
+@keyframes wake-out{from{opacity:0}to{opacity:1}}
+@keyframes wake-in{from{opacity:1}to{opacity:0}}
+@media(prefers-reduced-motion:reduce){
+ html[data-wake-phase]::after{display:none}
+ html[data-mode-motion=enter] main [data-reveal-motion]{animation:none!important}
+}
+@media(forced-colors:active){html[data-wake-phase]::after{display:none}}

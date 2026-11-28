@@ -20,18 +20,21 @@
      if(!el.style.getPropertyValue('--hover-color'))el.style.setProperty('--hover-color',shuffled(ink)[0]);
    });
  }
+
  const key='site-mode-navigation';
- let previous=document.documentElement.dataset.mode, pending=null, transition=null, generation=0, cleanup=0;
+ const forced=matchMedia('(forced-colors: active)');
+ const quiet=()=>reduce.matches||forced.matches;
  const root=()=>document.documentElement;
- function clear(){
+ let previous=root().dataset.mode, pending=null, transition=null, generation=0, cleanup=0, wakeTimer=0, wakeGuard=0;
+ function clearReveal(){
    clearTimeout(cleanup);delete root().dataset.modeMotion;
    document.querySelectorAll('[data-reveal-motion]').forEach(el=>{
      delete el.dataset.revealMotion;
-     for(const k of ['--dream-delay','--glitch-a','--glitch-b','--glitch-c','--dream-final'])el.style.removeProperty(k);
+     for(const k of ['--glitch-a','--glitch-b','--glitch-c','--dream-final'])el.style.removeProperty(k);
    });
  }
+ function clearWake(){clearTimeout(wakeTimer);clearTimeout(wakeGuard);delete root().dataset.wakePhase}
  function removeIntent(){try{sessionStorage.removeItem(key)}catch{}}
- // Fallback for browsers which perform a full navigation instead of an Astro swap.
  document.addEventListener('click',event=>{
    if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
    const a=event.target instanceof Element?event.target.closest('a[data-mode-target]'):null;
@@ -45,45 +48,72 @@
      return i&&i.to===root().dataset.mode&&i.path===location.pathname&&Date.now()-i.at<10000&&i.from!==i.to?i.from:null;
    }catch{return null}
  }
+ // Astro's loader is awaited before the DOM swap. Fade only after the next
+ // page has loaded, so slow requests cannot leave the reader behind a veil.
+ document.addEventListener('astro:before-preparation',e=>{
+   const token=++generation;pending=null;transition=null;clearReveal();clearWake();
+   const from=root().dataset.mode, load=e.loader;
+   if(from!=='personal'||quiet())return;
+   e.loader=async()=>{
+     await load();
+     if(token!==generation||quiet()||e.signal?.aborted||e.newDocument?.documentElement.dataset.mode!=='academic')return;
+     root().dataset.wakePhase='out';
+     // Wait for a paint before timing the 500ms fade.
+     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+     await new Promise(resolve=>setTimeout(resolve,500));
+     if(token!==generation||quiet()||e.signal?.aborted){if(token===generation)clearWake();return;}
+     root().dataset.wakePhase='hold';
+     // Fail open if navigation is canceled or the incoming page never swaps.
+     wakeGuard=setTimeout(()=>{if(token===generation)clearWake()},2000);
+   };
+ });
+ document.addEventListener('astro:before-swap',e=>{
+   transition=e.viewTransition;
+   const next=e.newDocument.documentElement.dataset.mode;
+   if(root().dataset.wakePhase==='hold'&&next==='academic'&&!quiet()){
+     e.newDocument.documentElement.dataset.wakePhase='hold';
+   }else clearWake();
+   clearReveal();
+ });
  function detect(){
    const next=root().dataset.mode;
-   if(next!==previous){pending=next;previous=next;generation++;clear();removeIntent()}
+   if(next!==previous){pending=next;previous=next;removeIntent()}
    prepareHover();
  }
  function start(next,token){
-   if(token!==generation||next!==root().dataset.mode||reduce.matches)return;
-   clear();
-   const els=[...document.querySelectorAll('main h1,main .section-head h2,main .writing-entry h3 a,main .writing-entry h3:not(:has(a)),main .mode-nav a,main .bio > p')].slice(0,24);
+   if(token!==generation||next!==root().dataset.mode||quiet()){if(token===generation)clearWake();return;}
+   if(next==='academic'){
+     clearTimeout(wakeGuard);
+     root().dataset.wakePhase='in';
+     wakeTimer=setTimeout(()=>{if(token===generation)clearWake()},530);
+     return;
+   }
+   clearReveal();
+   // Keep the three poses synchronized and restrict them to a few headings,
+   // not paragraphs, navigation, photographs, or the full background.
+   const c=shuffled(['#b7aed8','#9fc8d3','#d3a8c4','#c9c39b','#9fc6b0']).slice(0,3);
+   const els=[...document.querySelectorAll('main h1,main .section-head h2,main .writing-entry h3 a,main .writing-entry h3:not(:has(a))')].slice(0,10);
    for(const el of els){
-     const c=shuffled(next==='personal'?bright:ink);
-     // Preserve the real computed text color, including the graphite-clipped headings.
      const final=getComputedStyle(el).color;
      el.style.setProperty('--dream-final',final==='rgba(0, 0, 0, 0)'||final==='transparent'?getComputedStyle(root()).getPropertyValue('--heading').trim():final);
-     el.style.setProperty('--dream-delay',Math.floor(Math.random()*130)+'ms');
      ['--glitch-a','--glitch-b','--glitch-c'].forEach((k,i)=>el.style.setProperty(k,c[i]));
      el.dataset.revealMotion='';
    }
-   root().dataset.modeMotion=next==='personal'?'enter':'exit';
-   cleanup=setTimeout(()=>{if(token===generation)clear()},1030);
+   root().dataset.modeMotion='enter';
+   cleanup=setTimeout(()=>{if(token===generation)clearReveal()},630);
  }
  function visible(){
-   detect();
-   if(!pending)return;
+   detect();if(!pending)return;
    const next=pending, token=generation, vt=transition;pending=null;transition=null;
-   // The old/new View Transition snapshots can conceal animations on real DOM.
-   // Wait for their completion, then start on the next painted frame.
    const ready=vt?.finished?Promise.resolve(vt.finished).catch(()=>{}):Promise.resolve();
    ready.then(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>start(next,token))));
  }
- document.addEventListener('astro:before-swap',e=>{
-   transition=e.viewTransition;
-   // Invalidate any scheduled reveal when another navigation replaces its DOM.
-   generation++;clear();
- });
  document.addEventListener('astro:after-swap',detect);
  document.addEventListener('astro:page-load',visible);
  document.addEventListener('site:render',visible);
- reduce.addEventListener?.('change',e=>{if(e.matches){pending=null;generation++;clear()}});
+ for(const media of [reduce,forced])media.addEventListener?.('change',()=>{if(quiet()){pending=null;generation++;clearReveal();clearWake()}});
+ // Full-document fallback can show the incoming half, but cannot control
+ // the browser's preceding document swap. Ordinary client navigation has both halves.
  prepareHover();
- const from=consumeIntent();if(from){pending=root().dataset.mode;generation++;visible()}
+ const from=consumeIntent();if(from&&!quiet()){pending=root().dataset.mode;generation++;if(pending==='academic')root().dataset.wakePhase='hold';visible()}
 })();

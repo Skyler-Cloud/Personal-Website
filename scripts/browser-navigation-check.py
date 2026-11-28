@@ -89,7 +89,7 @@ with tempfile.TemporaryDirectory() as temp:
                     expect(motion.locator(".home-profile")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
                     # Verify actual CSS animation events, not only a mode flag.
-                    motion.evaluate("""window.__dreamEvents=[];document.addEventListener('animationstart',e=>{if(e.animationName==='dream-breakthrough'||e.animationName==='dream-drain')window.__dreamEvents.push(e.animationName)})""")
+                    motion.evaluate("""window.__dreamEvents=[];document.addEventListener('animationstart',e=>{if(['dream-breakthrough','wake-out','wake-in'].includes(e.animationName))window.__dreamEvents.push(e.animationName)})""")
                     link = motion.locator(".writing-entry h3 a").first
                     bands = link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')")
                     ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
@@ -105,16 +105,21 @@ with tempfile.TemporaryDirectory() as temp:
                     expect(motion.locator("html")).to_have_attribute("data-mode-motion","enter")
                     expect(motion.locator(".dream-scene")).to_be_visible()
                     motion.wait_for_function("window.__dreamEvents.includes('dream-breakthrough')")
+                    assert motion.locator("h1").evaluate("(el)=>getComputedStyle(el).animationDuration") == "0.6s"
+                    assert motion.locator("h1").evaluate("(el)=>getComputedStyle(el).animationTimingFunction").startswith("steps(1")
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
                     personal_link = motion.locator(".writing-entry h3 a").first
                     personal_link.hover()
                     assert personal_link.evaluate("(el)=>getComputedStyle(el).backgroundImage").startswith("linear-gradient")
                     assert personal_link.evaluate("(el)=>getComputedStyle(el).backgroundImage").count("50%")==2
+                    motion.evaluate("""window.__wakeMidpoint=null;document.addEventListener('astro:after-swap',()=>{window.__wakeMidpoint={mode:document.documentElement.dataset.mode,phase:document.documentElement.dataset.wakePhase,opacity:getComputedStyle(document.documentElement,'::after').opacity}})""")
                     motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
-                    expect(motion.locator("html")).to_have_attribute("data-mode-motion","exit")
-                    motion.wait_for_function("window.__dreamEvents.includes('dream-drain')")
-                    motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
+                    motion.wait_for_function("window.__dreamEvents.includes('wake-out')")
+                    motion.wait_for_function("window.__dreamEvents.includes('wake-in')")
+                    assert motion.evaluate("window.__wakeMidpoint") == {"mode":"academic","phase":"hold","opacity":"1"}
+                    expect(motion.locator("html")).to_have_attribute("data-mode","academic")
+                    motion.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase')")
                     motion.close()
                     plain = browser.new_page(java_script_enabled=False)
                     plain.goto(url)
