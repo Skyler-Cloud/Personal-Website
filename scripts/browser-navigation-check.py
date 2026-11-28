@@ -91,10 +91,15 @@ with tempfile.TemporaryDirectory() as temp:
                     # Verify actual CSS animation events, not only a mode flag.
                     motion.evaluate("""window.__dreamEvents=[];document.addEventListener('animationstart',e=>{if(e.animationName==='dream-breakthrough'||e.animationName==='dream-drain')window.__dreamEvents.push(e.animationName)})""")
                     link = motion.locator(".writing-entry h3 a").first
-                    gradient = link.evaluate("(el)=>el.style.getPropertyValue('--hover-gradient')")
-                    assert gradient.startswith("linear-gradient") and gradient.count("#")==3
+                    bands = link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')")
+                    ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
+                    assert bands.count("#")==3 and ink in bands
+                    assert bands.count("33.3333%")==2 and bands.count("66.6667%")==2
                     link.hover()
-                    assert link.evaluate("(el)=>getComputedStyle(el).backgroundImage").startswith("linear-gradient")
+                    assert link.evaluate("(el)=>getComputedStyle(el).backgroundImage") == "none"
+                    expected_ink = "rgb(" + ", ".join(str(int(ink[i:i+2],16)) for i in (1,3,5)) + ")"
+                    expect(link).to_have_css("color", expected_ink)
+                    assert link.evaluate("(el)=>getComputedStyle(el,'::after').backgroundImage").startswith("linear-gradient")
                     motion.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal",exact=True).click()
                     expect(motion.locator("html")).to_have_attribute("data-mode","personal")
                     expect(motion.locator("html")).to_have_attribute("data-mode-motion","enter")
@@ -102,6 +107,10 @@ with tempfile.TemporaryDirectory() as temp:
                     motion.wait_for_function("window.__dreamEvents.includes('dream-breakthrough')")
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-mode-motion')")
+                    personal_link = motion.locator(".writing-entry h3 a").first
+                    personal_link.hover()
+                    assert personal_link.evaluate("(el)=>getComputedStyle(el).backgroundImage").startswith("linear-gradient")
+                    assert personal_link.evaluate("(el)=>getComputedStyle(el).backgroundImage").count("50%")==2
                     motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
                     expect(motion.locator("html")).to_have_attribute("data-mode-motion","exit")
                     motion.wait_for_function("window.__dreamEvents.includes('dream-drain')")

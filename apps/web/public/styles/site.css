@@ -36,7 +36,7 @@ html[data-mode=academic] .writing-entry h3 a{color:var(--heading)}
  --reveal:linear-gradient(90deg,#007c99,#6740ac,#a72f70,#b34530,#8b6900,#237c49);
  --paper-grain-opacity:.12;--graphite-strength:.28;
 }
-html[data-mode=personal]{color-scheme:dark;--reveal:linear-gradient(90deg,#49cce6,#aa90ff,#f188bd,#f18a69,#f3d45e,#70d89b)}
+html[data-mode=personal]{color-scheme:dark;--reveal:linear-gradient(90deg,#49cce6 0% 16.6667%,#aa90ff 16.6667% 33.3333%,#f188bd 33.3333% 50%,#f18a69 50% 66.6667%,#f3d45e 66.6667% 83.3333%,#70d89b 83.3333% 100%)}
 html[data-mode=academic]{color-scheme:light}
 body{min-height:100vh;isolation:isolate;font-family:var(--font-body),system-ui,sans-serif}
 main{position:relative;z-index:1;width:min(100%,1060px);padding:18px 24px 40px}
@@ -125,20 +125,20 @@ html[data-mode-motion=enter] .writing-entry h3 a,html[data-mode-motion=exit] .wr
 html[data-mode-motion=exit] .masthead h1,html[data-mode-motion=exit] .section-head h2{background:none;color:var(--heading)}
 @media(prefers-reduced-motion:reduce){.dream-layer{animation:none}}
 
-/* Academic color is a per-entry surprise; Personal keeps its existing hover. */
+/* Hard-edged color bands, not blended gradients. Academic titles use one
+   ink from their three-color underline; Personal keeps all six color bands. */
 html[data-mode=academic]{
- --academic-reveal-default:linear-gradient(90deg,#00839d,#9c277b,#6543c3);
+ --academic-reveal-default:linear-gradient(90deg,#007b96 0% 33.3333%,#a52779 33.3333% 66.6667%,#6537bd 66.6667% 100%);
+ --academic-title-default:#007b96;
 }
 html[data-mode=academic] a:not(.writing-entry h3 a):hover,
 html[data-mode=academic] a:not(.writing-entry h3 a):focus-visible{color:var(--hover-color,#7950bd)}
-@supports (background-clip:text){
- html[data-mode=academic] .writing-entry:hover h3 a,
- html[data-mode=academic] .writing-entry:focus-within h3 a{
-  background-image:var(--hover-gradient,var(--academic-reveal-default));
-  background-clip:text;-webkit-background-clip:text;color:transparent;
- }
+html[data-mode=academic] .writing-entry:hover h3 a,
+html[data-mode=academic] .writing-entry:focus-within h3 a{
+ background-image:none;color:var(--hover-color,var(--academic-title-default));
+ text-decoration:none;
 }
-html[data-mode=academic] .writing-entry h3 a::after{background:var(--hover-gradient,var(--academic-reveal-default));height:2px}
+html[data-mode=academic] .writing-entry h3 a::after{background:var(--hover-bands,var(--academic-reveal-default));height:2px}
 html[data-mode-motion] main [data-reveal-motion]{
  background-image:none!important;-webkit-text-fill-color:currentColor!important;
  text-decoration:none;

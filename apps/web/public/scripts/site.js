@@ -11,9 +11,10 @@
  function prepareHover(){
    if(document.documentElement.dataset.mode!=='academic')return;
    document.querySelectorAll('.writing-entry h3 a').forEach(el=>{
-     if(el.style.getPropertyValue('--hover-gradient'))return;
-     const c=shuffled(ink);
-     el.style.setProperty('--hover-gradient','linear-gradient(90deg,'+c.slice(0,3).join(',')+')');
+     if(el.style.getPropertyValue('--hover-bands'))return;
+     const c=shuffled(ink).slice(0,3);
+     el.style.setProperty('--hover-color',c[Math.floor(Math.random()*3)]);
+     el.style.setProperty('--hover-bands','linear-gradient(90deg,'+c[0]+' 0% 33.3333%,'+c[1]+' 33.3333% 66.6667%,'+c[2]+' 66.6667% 100%)');
    });
    document.querySelectorAll('main a:not(.writing-entry h3 a)').forEach(el=>{
      if(!el.style.getPropertyValue('--hover-color'))el.style.setProperty('--hover-color',shuffled(ink)[0]);
