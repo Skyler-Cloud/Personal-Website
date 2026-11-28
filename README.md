@@ -51,6 +51,24 @@ For an example custom field, add `{"id":"author","label":"Author","type":"text",
 
 Clone the repository using GitHub Desktop, then open the local `content/` folder as a vault. Set Files and links → Use Wikilinks off, New link format → Relative path to file, Default location for new attachments → In the folder specified below, and Attachment folder path → assets. Use `templates/post.md` as an optional template and save publishable notes in writing/ using lower-case hyphenated filenames. Sync by reviewing, committing and pushing in GitHub Desktop; pull before editing on another device. Local .obsidian settings (including plugins and tokens) are ignored. Never sync private notes or drafts to this public repository. This is a file-based editing workflow, not an installed or authenticated Obsidian/Notion sync service.
 
+## Overleaf and LaTeX
+
+Download the source ZIP from Overleaf and upload it unchanged to content/latex/. Or upload a standalone .tex file. Create a normal article in content/writing/ with YAML metadata, for example:
+
+```yaml
+---
+title: "Cryptography notes"
+date: "2026-11-27"
+type: technical
+latex: crypto-notes.zip
+latexMain: main.tex
+latexEngine: pdflatex
+---
+Optional introduction.
+```
+
+The build compiles the complete project to a PDF and the article provides a link to read it. If latexMain is omitted, the compiler looks for a unique main.tex or documentclass file. Engines: pdflatex (default), xelatex and lualatex. CI installs TeX Live packages only when sources exist; local builds with published TeX require Python 3, latexmk and the necessary TeX packages. No source ZIP is published as a website asset, but the public repository still exposes it. Only commit trusted author-owned projects: TeX is executable input, not a hardened sandbox. Shell escape and project latexmkrc are disabled; archives have file count/size limits and unsafe paths are rejected. Packages requiring shell escape or unavailable fonts may fail. This is PDF rendering, not native HTML conversion or live Overleaf synchronization. The offline standalone preview does not compile or embed PDFs; use the hosted preview. The generated assets/latex/ location is reserved.
+
 ## Media assets
 
 Upload portraits, photos, artwork, PDFs, and other public content to `content/assets/`. Use paths such as `assets/academic-profile.jpg` in `site.json` and gallery records. The build copies the directory into the generated public asset location; URLs stay at `/assets/...` (or the deployment base plus `assets/...`). Do not edit `apps/web/public/assets/`, which is now ignored and regenerated. For local development, restart `npm run dev` after adding or changing assets. All files in content/assets are published, even if no page references them.

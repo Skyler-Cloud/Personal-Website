@@ -1,0 +1,3 @@
+# LaTeX projects
+
+Place a standalone .tex file or a downloaded Overleaf source ZIP here. Create a matching article in writing/ with normal metadata and `latex: project.zip` (or `latex: project.tex`). Optional `latexMain: main.tex` selects a ZIP entry relative to its root; `latexEngine: xelatex` or `lualatex` selects an engine instead of pdflatex. The published article links to the compiled PDF. Only non-draft referenced documents are compiled. Source files are public in this repository. Only commit your own trusted TeX; compilation is not a hardened sandbox. No shell escape or project latexmkrc is allowed. No HTML conversion or Overleaf live sync yet.

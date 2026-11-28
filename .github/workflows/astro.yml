@@ -20,7 +20,7 @@ jobs:
   build:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'preview' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: read
       pages: read
@@ -37,6 +37,12 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
+      - name: Install TeX tools when projects exist
+        run: |
+          if find content/latex -maxdepth 1 -type f \( -name '*.zip' -o -name '*.tex' \) | grep -q .; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends latexmk texlive-latex-extra texlive-fonts-recommended texlive-science texlive-bibtex-extra biber texlive-xetex texlive-luatex
+          fi
       - run: npm run check
       - run: npm test
       - name: Verify root hosting
@@ -80,7 +86,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -92,6 +98,12 @@ jobs:
         with:
           node-version: 22
       - run: npm ci --no-audit --no-fund
+      - name: Install TeX tools when projects exist
+        run: |
+          if find content/latex -maxdepth 1 -type f \( -name '*.zip' -o -name '*.tex' \) | grep -q .; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends latexmk texlive-latex-extra texlive-fonts-recommended texlive-science texlive-bibtex-extra biber texlive-xetex texlive-luatex
+          fi
       - run: npm run check
       - run: npm test
       - name: Build preview under its own base path

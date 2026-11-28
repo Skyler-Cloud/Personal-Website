@@ -3,7 +3,7 @@ export type Value = string|number|boolean|string[]|null;
 export interface Field {id:string;label:string;type:FieldType;min?:number;max?:number;suffix?:string;categories?:string[];options?:string[]}
 export interface Category {id:string;label:string}
 export type Mode = 'academic'|'personal';
-export interface Post {modes?:Mode[];id:string;title:string;date:string;type:string;draft:boolean;body:string;properties:Record<string,Value>}
+export interface Post {latex?:string;latexMain?:string;latexEngine?:'pdflatex'|'xelatex'|'lualatex';modes?:Mode[];id:string;title:string;date:string;type:string;draft:boolean;body:string;properties:Record<string,Value>}
 export interface GalleryItem {id:string;title:string;type:'artwork'|'photography';medium:string;date:string;image:string;alt:string;description?:string;featured?:boolean}
 export interface View {fields:string[];hideEmpty:boolean}
 export interface Config {categories:Category[];fields:Field[]}
