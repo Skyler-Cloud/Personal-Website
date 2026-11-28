@@ -4,7 +4,7 @@ import '@fontsource/nunito/400.css';
 import '@fontsource/nunito/600.css';
 import '@fontsource/nunito/700.css';
 import {ClientRouter} from 'astro:transitions';
-import {existsSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {parse} from 'yaml';
@@ -36,7 +36,7 @@ export async function getStaticPaths(){
       return original?original(tokens,idx,opts,env,self):self.renderToken(tokens,idx,opts);
     };
   }
-  return renderPages(data,{base,markdown:s=>md.render(s)}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
+  return renderPages(data,{base,markdown:s=>md.render(s),latex:id=>readFileSync(join(project,'apps/web/.generated/latex',id+'.html'),'utf8').replace(/src="assets\/latex\//g,'src="'+base+'assets/latex/')}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
 }
 const {page,site,base,tokens:css}=Astro.props;
 const hasMath=/<span\s+class="katex(?:\s|")/.test(page.html);

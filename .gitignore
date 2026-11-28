@@ -13,3 +13,6 @@ preview-output/
 # Obsidian local settings/plugins may contain access tokens.
 .obsidian/
 .trash/
+
+/apps/web/.generated/
+__pycache__/

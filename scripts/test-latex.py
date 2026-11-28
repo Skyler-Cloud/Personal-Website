@@ -16,6 +16,22 @@ class TestLatex(unittest.TestCase):
                 tex.unpack(root/"bad.zip",root/"out")
             self.assertFalse((root/"outside.tex").exists())
 
+    @unittest.skipUnless(shutil.which("pandoc"),"Pandoc not installed")
+    def test_convert_zip(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            with zipfile.ZipFile(root/"project.zip","w") as z:
+                z.writestr("main.tex",r"\documentclass{article}\usepackage{amsthm,amsmath}\newtheorem{theorem}{Theorem}\newcommand{\F}{\mathbb{F}}\begin{document}\section{A section}\begin{theorem}\label{thm:a} For $x\in\F$, $x=x$.\end{theorem}\begin{proof}Trivial.\end{proof}\input{part}\end{document}")
+                z.writestr("part.tex",r"See Theorem~\ref{thm:a}. \[x^2=x\cdot x\]")
+            tex.convert_job(root,root/"out",root/"fragments",{"id":"test","source":"project.zip"})
+            html=(root/"fragments/test.html").read_text()
+            self.assertIn("<math",html)
+            self.assertIn("Theorem 1",html)
+            self.assertIn("Proof.",html)
+            self.assertIn('href="#tex-test-thm:a"',html)
+            self.assertIn("<h2",html)
+            self.assertNotIn("<iframe",html)
+
     @unittest.skipUnless(shutil.which("latexmk") and shutil.which("pdflatex"),"TeX not installed")
     def test_compile_zip_and_tex(self):
         with tempfile.TemporaryDirectory() as directory:

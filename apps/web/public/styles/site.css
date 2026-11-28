@@ -25,3 +25,5 @@ html[data-mode=academic] .writing-entry h3 a{color:var(--heading)}
 }
 .latex-document{margin:12px 0;display:grid;gap:8px}
 .latex-document a{font-weight:600;text-decoration:underline}
+
+.latex-html{min-width:0}.latex-html math[display=block]{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:6px 0}.latex-html figure{margin:12px 0}.latex-html figcaption{font-size:12px;color:var(--muted)}.latex-html .theorem,.latex-html .lemma,.latex-html .definition,.latex-html .proposition,.latex-html .corollary{border-left:2px solid var(--rose-line);padding-left:12px;margin:12px 0}.latex-html .proof{margin:12px 0}.latex-html .references{font-size:13px}.latex-html [id]{scroll-margin-top:12px}
