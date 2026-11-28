@@ -84,6 +84,27 @@
      el.dataset.glitchBlock='';
    }
  }
+ // The photo fragments belong to their own portrait stage, not the viewport.
+ // Each pose shows slices of that page's actual image. No 3D card, persistence,
+ // scroll-coordinate bookkeeping, or extra frames.
+ function preparePortraitGlitch(doc,frame){
+   const stage=doc.querySelector('.portrait-stage'),photo=stage?.querySelector('img.portrait');
+   if(!photo)return;
+   stage.querySelector('.portrait-glitch')?.remove();
+   const layer=doc.createElement('div');layer.className='portrait-glitch';layer.setAttribute('aria-hidden','true');
+   const edges=[0,24,53,71,100];
+   const shifts=frame===1?[[-3,1],[3,-4],[-2,4],[4,-1]]:[[-5,-3],[3,4],[-4,0],[5,-2]];
+   const inks=['#28b8d6','#d95197','#7959c8','#e9c83a'];
+   for(let i=0;i<4;i++){
+     const piece=doc.createElement('div');piece.className='portrait-glitch-piece';
+     piece.style.setProperty('--slice-x',shifts[i][0]+'px');piece.style.setProperty('--slice-y',shifts[i][1]+'px');
+     piece.style.setProperty('--slice-left',edges[i]+'%');piece.style.setProperty('--slice-right',(100-edges[i+1])+'%');
+     piece.style.setProperty('--slice-ink',inks[(i+frame-1)%4]);
+     const img=doc.createElement('img');img.setAttribute('src',photo.getAttribute('src'));img.alt='';img.draggable=false;
+     piece.append(img);layer.append(piece);
+   }
+   stage.append(layer);
+ }
  function styleFrame(doc,frame){
    const r=doc.documentElement;ensureMosaic(doc);prepareWords(doc);
    r.style.setProperty('--glitch-base',pick(accents));r.style.setProperty('--glitch-shadow',shadows[frame-1]);
@@ -97,9 +118,11 @@
      el.style.setProperty('--glitch-block-bg',pick(['#e8d4ed','#e1d4fa','#edc1d7','#51406e','#39304e']));
      el.style.setProperty('--glitch-block-line',pick(accents));
    }
+   preparePortraitGlitch(doc,frame);
    r.dataset.dreamFrame=String(frame);
  }
  function clearWords(doc){
+   doc.querySelectorAll('.portrait-glitch').forEach(el=>el.remove());
    for(const n of doc.querySelectorAll('.glitch-word')){const p=n.parentNode;n.replaceWith(doc.createTextNode(n.textContent||''));p?.normalize()}
    for(const el of doc.querySelectorAll('[data-glitch-block]')){delete el.dataset.glitchBlock;el.style.removeProperty('--glitch-block-bg');el.style.removeProperty('--glitch-block-line')}
    doc.documentElement.style.removeProperty('--glitch-base');doc.documentElement.style.removeProperty('--glitch-shadow');
@@ -231,7 +254,7 @@
      // Native snapshots can add extra crossfade frames. Skip that animation,
      // while retaining Astro's atomic DOM swap and history handling.
      const vt=e.viewTransition;vt?.ready?.catch(()=>{});try{vt?.skipTransition?.()}catch{}
-   }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;clearMotion()}
+   }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;clearWords(e.newDocument);clearMotion()}
  });
  function detect(){
    const next=root().dataset.mode;

@@ -224,3 +224,15 @@ html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing
 .dream-entry-text{display:grid;gap:inherit;min-width:0;transform-origin:center;transition:transform 150ms cubic-bezier(.2,.75,.25,1)}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-text{transform:rotate(.7deg)}
 @media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-entry-text{transition:none!important}html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-text{transform:none}}
+
+
+/* Dream-only photo glitch: local slices follow normal document scrolling.
+   The original image remains in flow and is restored as soon as the pose ends. */
+.portrait-glitch{display:none;position:absolute;inset:0;pointer-events:none;z-index:3;transform:rotate(var(--portrait-angle));transform-origin:center}
+html[data-dream-frame] .portrait-stage:has(.portrait-glitch)>.portrait{opacity:0}
+html[data-dream-frame] .portrait-glitch{display:block}
+.portrait-glitch-piece{position:absolute;inset:0;transform:translate(var(--slice-x),var(--slice-y));filter:drop-shadow(1.5px 0 var(--slice-ink))}
+.portrait-glitch-piece img{display:block;width:100%;height:100%;object-fit:cover;clip-path:inset(0 var(--slice-right) 0 var(--slice-left))}
+html[data-dream-frame="1"] .portrait-glitch-piece img{filter:grayscale(.7) contrast(1.12)}
+html[data-dream-frame="2"] .portrait-glitch-piece img{filter:saturate(1.3) contrast(1.08)}
+@media(prefers-reduced-motion:reduce),(forced-colors:active){html[data-dream-frame] .portrait-glitch{display:none!important}html[data-dream-frame] .portrait-stage:has(.portrait-glitch)>.portrait{opacity:1!important}}

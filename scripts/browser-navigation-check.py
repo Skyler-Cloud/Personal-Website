@@ -109,7 +109,7 @@ with tempfile.TemporaryDirectory() as temp:
                             assert all(abs(snapshots[0][selector][i]-snapshots[1][selector][i])<1 for i in fields), (width,selector,snapshots)
                     geometry.close()
                     # Observe the actual outgoing and incoming DOM states.
-                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase,performance.now()]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
+                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length,document.querySelectorAll(".portrait-glitch-piece").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase,performance.now()]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
                     link = motion.locator(".writing-entry h3 a").first
                     bands = link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')")
                     assert bands.count("#")==3
@@ -130,7 +130,9 @@ with tempfile.TemporaryDirectory() as temp:
                     motion.wait_for_function("window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-dream-frame')")
                     assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1') && window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
-                    assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1'&&x[2]>0)")
+                    assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1'&&x[2]>0&&x[3]===4)")
+                    assert motion.evaluate("window.__frames.some(x=>x[0]==='personal'&&x[1]==='2'&&x[3]===4)")
+                    assert motion.locator(".portrait-glitch").count() == 0
                     assert motion.locator(".glitch-word").count() == 0
                     assert motion.evaluate("window.__frames.every(x=>x[1]!=='3')")
                     assert motion.locator(".portrait-flip-layer").count() == 0
@@ -169,6 +171,7 @@ with tempfile.TemporaryDirectory() as temp:
                     wake_elapsed = motion.evaluate("window.__wake.find(x=>x[0]==='academic'&&x[1]==='in')[2]-window.__wake.find(x=>x[0]==='personal'&&x[1]==='out')[2]")
                     assert wake_elapsed < 500, f"Wake cut delayed: {wake_elapsed:.0f} ms"
                     assert motion.locator(".portrait").evaluate("(el)=>getComputedStyle(el).opacity") == "1"
+                    assert motion.locator(".portrait-glitch").count() == 0
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase')")
                     expect(motion.locator("html")).to_have_attribute("data-mode","academic")
                     assert motion.locator("body").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(255, 255, 255)"
@@ -190,6 +193,7 @@ with tempfile.TemporaryDirectory() as temp:
                             scrolled.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase') && !document.documentElement.hasAttribute('data-dream-frame')")
                             assert scrolled.evaluate("window.__strayFlip") is False
                             assert scrolled.locator(".portrait-flip-layer").count() == 0
+                            assert scrolled.locator(".portrait-glitch").count() == 0
                             expect(scrolled.locator(".portrait")).to_have_css("visibility","visible")
                     scrolled.close()
                     plain = browser.new_page(java_script_enabled=False)
