@@ -164,16 +164,43 @@
    }
  }
  function removeFlip(){
-   if(flip){for(const animation of flip.animations)try{animation.cancel()}catch{};flip.layer.remove();flip=null}
+   if(flip){
+     for(const animation of flip.animations)try{animation.cancel()}catch{}
+     flip.layer.remove();
+     // A canceled outgoing flip must not leave a persistence marker or
+     // hidden portrait in the not-yet-swapped document.
+     flip.marker.remove();delete flip.destination.documentElement.dataset.portraitFlip;
+     flip=null;
+   }
    document.querySelectorAll('.portrait-flip-layer').forEach(el=>el.remove());
    delete root().dataset.portraitFlip;
  }
  function place(layer,r){Object.assign(layer.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'})}
+ // A fixed overlay is only valid when the two viewport anchors coincide.
+ // Scrolled navigation retains the normal router behavior, without a
+ // detached photograph traveling from the old scroll offset to the top.
+ function atTop(){return Math.abs(window.scrollY)<2&&Math.abs(window.scrollX)<2}
+ function fullyVisible(el){
+   const r=el.getBoundingClientRect(),v=window.visualViewport;
+   const top=v?.offsetTop||0,left=v?.offsetLeft||0;
+   return r.width>0&&r.height>0&&r.top>=top&&r.left>=left&&r.bottom<=top+(v?.height||innerHeight)&&r.right<=left+(v?.width||innerWidth);
+ }
+ function sameAnchor(a,b){return ['left','top','width','height'].every(k=>Math.abs(a[k]-b[k])<2)}
+ function cancelOnViewportChange(){
+   if(!flip)return;
+   const stage=document.querySelector('.portrait-stage');
+   if(!atTop()||!stage||!fullyVisible(stage)||!sameAnchor(flip.rect,stage.getBoundingClientRect()))removeFlip();
+ }
+ window.addEventListener('scroll',cancelOnViewportChange,{passive:true});
+ window.addEventListener('resize',cancelOnViewportChange,{passive:true});
+ window.visualViewport?.addEventListener('scroll',cancelOnViewportChange,{passive:true});
+ window.visualViewport?.addEventListener('resize',cancelOnViewportChange,{passive:true});
  function createFlip(doc,kind,destURL){
+   if(!atTop())return;
    const src=document.querySelector('.portrait-stage .portrait'),dst=doc.querySelector('.portrait-stage .portrait');
    if(!src||!dst||!src.complete||!src.naturalWidth||!src.getClientRects().length)return;
    let destination;try{destination=new URL(dst.getAttribute('src'),destURL).href}catch{return}
-   const r=src.closest('.portrait-stage').getBoundingClientRect();if(r.width<1||r.height<1||r.bottom<0||r.top>innerHeight)return;
+   const stage=src.closest('.portrait-stage'),r=stage.getBoundingClientRect();if(!fullyVisible(src)||!fullyVisible(stage))return;
    const layer=document.createElement('div');layer.className='portrait-flip-layer';layer.dataset.kind=kind;layer.setAttribute('aria-hidden','true');layer.setAttribute('data-astro-transition-persist','portrait-mode-flip');
    place(layer,r);
    const angle=root().dataset.mode==='academic'?-2:2;
@@ -196,7 +223,7 @@
    document.body.append(layer);
    const marker=doc.createElement('div');marker.className='portrait-flip-layer';marker.setAttribute('data-astro-transition-persist','portrait-mode-flip');marker.setAttribute('aria-hidden','true');doc.body.append(marker);
    root().dataset.portraitFlip='true';doc.documentElement.dataset.portraitFlip='true';
-   flip={layer,pieces,kind,rect:r,angle,animations:[]};
+   flip={layer,pieces,kind,rect:r,angle,marker,destination:doc,animations:[]};
    flip.animations.push(layer.animate([{transform:'rotate('+angle+'deg)'},{transform:'rotate(0deg)'}],{duration:kind==='dream'?DREAM_MS:WAKE_MS,easing:kind==='dream'?'steps(2,end)':IN_CURVE,fill:'both'}));
    for(const [i,piece] of pieces.entries()){
      const deg=kind==='dream'?[105,78,94,65][i]:90;
@@ -207,13 +234,13 @@
  function continueFlip(){
    if(!flip)return;
    const dst=document.querySelector('.portrait-stage .portrait');
-   if(!dst){removeFlip();return}
-   const {layer,rect,kind,pieces}=flip;
+   if(!dst||!atTop()||!fullyVisible(dst)||!sameAnchor(flip.rect,dst.closest('.portrait-stage').getBoundingClientRect())){removeFlip();return}
+   const {layer,kind,pieces}=flip;
    if(!layer.isConnected){document.querySelector('.portrait-flip-layer')?.remove();document.body.append(layer)}
    root().dataset.portraitFlip='true';
    const end=dst.closest('.portrait-stage').getBoundingClientRect(),duration=kind==='dream'?DREAM_MS:WAKE_MS;
    flip.animations.push(layer.animate([{transform:'rotate(0deg)'},{transform:'rotate('+(-flip.angle)+'deg)'}],{duration,easing:kind==='dream'?'steps(2,end)':OUT_CURVE,fill:'both'}));
-   flip.animations.push(layer.animate([{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px'},{left:end.left+'px',top:end.top+'px',width:end.width+'px',height:end.height+'px'}],{duration,easing:OUT_CURVE,fill:'both'}));
+   place(layer,end);
    for(const [i,piece] of pieces.entries()){
      const deg=kind==='dream'?[105,78,94,65][i]:90;
      flip.animations.push(piece.animate([{transform:'rotateY('+deg+'deg)'},{transform:'rotateY(180deg)'}],{duration,easing:kind==='dream'?'steps(2,end)':OUT_CURVE,fill:'both'}));
@@ -285,6 +312,7 @@
  });
  document.addEventListener('astro:before-swap',e=>{
    const next=e.newDocument.documentElement;
+   cancelOnViewportChange();
    if(!quiet()&&next.dataset.mode!==root().dataset.mode){
      // Native snapshots can add extra crossfade frames. Skip that animation,
      // while retaining Astro's atomic DOM swap and history handling.
