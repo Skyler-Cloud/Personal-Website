@@ -139,7 +139,7 @@
    return result;
  }
 
- let wakeAnimations=[],restoreNative=null,flip=null;
+ let wakeAnimations=[],restoreNative=null;
  function cancelWake(){for(const a of wakeAnimations){try{a.cancel()}catch{}}wakeAnimations=[]}
  function animateWake(from,to,incoming){
    cancelWake();let i=0;
@@ -161,89 +161,6 @@
      if(!Object.keys(f).length)continue;
      // Endpoints are exact, only midpoints and timing are perturbed.
      try{wakeAnimations.push(el.animate([f,{...mid,offset:.5},t],{delay,duration,easing:incoming?OUT_CURVE:IN_CURVE,fill:'both'}))}catch{}
-   }
- }
- function removeFlip(){
-   if(flip){
-     for(const animation of flip.animations)try{animation.cancel()}catch{}
-     flip.layer.remove();
-     // A canceled outgoing flip must not leave a persistence marker or
-     // hidden portrait in the not-yet-swapped document.
-     flip.marker.remove();delete flip.destination.documentElement.dataset.portraitFlip;
-     flip=null;
-   }
-   document.querySelectorAll('.portrait-flip-layer').forEach(el=>el.remove());
-   delete root().dataset.portraitFlip;
- }
- function place(layer,r){Object.assign(layer.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'})}
- // A fixed overlay is only valid when the two viewport anchors coincide.
- // Scrolled navigation retains the normal router behavior, without a
- // detached photograph traveling from the old scroll offset to the top.
- function atTop(){return Math.abs(window.scrollY)<2&&Math.abs(window.scrollX)<2}
- function fullyVisible(el){
-   const r=el.getBoundingClientRect(),v=window.visualViewport;
-   const top=v?.offsetTop||0,left=v?.offsetLeft||0;
-   return r.width>0&&r.height>0&&r.top>=top&&r.left>=left&&r.bottom<=top+(v?.height||innerHeight)&&r.right<=left+(v?.width||innerWidth);
- }
- function sameAnchor(a,b){return ['left','top','width','height'].every(k=>Math.abs(a[k]-b[k])<2)}
- function cancelOnViewportChange(){
-   if(!flip)return;
-   const stage=document.querySelector('.portrait-stage');
-   if(!atTop()||!stage||!fullyVisible(stage)||!sameAnchor(flip.rect,stage.getBoundingClientRect()))removeFlip();
- }
- window.addEventListener('scroll',cancelOnViewportChange,{passive:true});
- window.addEventListener('resize',cancelOnViewportChange,{passive:true});
- window.visualViewport?.addEventListener('scroll',cancelOnViewportChange,{passive:true});
- window.visualViewport?.addEventListener('resize',cancelOnViewportChange,{passive:true});
- function createFlip(doc,kind,destURL){
-   if(!atTop())return;
-   const src=document.querySelector('.portrait-stage .portrait'),dst=doc.querySelector('.portrait-stage .portrait');
-   if(!src||!dst||!src.complete||!src.naturalWidth||!src.getClientRects().length)return;
-   let destination;try{destination=new URL(dst.getAttribute('src'),destURL).href}catch{return}
-   const stage=src.closest('.portrait-stage'),r=stage.getBoundingClientRect();if(!fullyVisible(src)||!fullyVisible(stage))return;
-   const layer=document.createElement('div');layer.className='portrait-flip-layer';layer.dataset.kind=kind;layer.setAttribute('aria-hidden','true');layer.setAttribute('data-astro-transition-persist','portrait-mode-flip');
-   place(layer,r);
-   const angle=root().dataset.mode==='academic'?-2:2;
-   layer.style.transform='rotate('+angle+'deg)';
-   const widths=kind==='dream'?[.25,.34,.18,.23]:[1];
-   let start=0;
-   const pieces=[];
-   for(const width of widths){
-     const piece=document.createElement('div');piece.className='portrait-flip-piece';Object.assign(piece.style,{left:(start*100)+'%',width:(width*100)+'%'});
-     for(const [idx,url] of [src.currentSrc||src.src,destination].entries()){
-       const face=document.createElement('div');face.className='portrait-flip-face'+(idx?' portrait-flip-back':'');
-       // Background is sized to the whole photo, then each slice shows
-       // the appropriate region. Use a full-card image inside a clipped face.
-       const image=document.createElement('img');image.src=url;image.alt='';image.draggable=false;
-       Object.assign(image.style,{position:'absolute',width:(100/width)+'%',maxWidth:'none',height:'100%',left:(-start/width*100)+'%',top:'0',objectFit:'cover',objectPosition:'center',filter:(idx?doc.documentElement.dataset.mode:root().dataset.mode)==='academic'?'grayscale(1)':'none'});
-       face.style.overflow='hidden';face.append(image);piece.append(face);
-     }
-     layer.append(piece);pieces.push(piece);start+=width;
-   }
-   document.body.append(layer);
-   const marker=doc.createElement('div');marker.className='portrait-flip-layer';marker.setAttribute('data-astro-transition-persist','portrait-mode-flip');marker.setAttribute('aria-hidden','true');doc.body.append(marker);
-   root().dataset.portraitFlip='true';doc.documentElement.dataset.portraitFlip='true';
-   flip={layer,pieces,kind,rect:r,angle,marker,destination:doc,animations:[]};
-   flip.animations.push(layer.animate([{transform:'rotate('+angle+'deg)'},{transform:'rotate(0deg)'}],{duration:kind==='dream'?DREAM_MS:WAKE_MS,easing:kind==='dream'?'steps(2,end)':IN_CURVE,fill:'both'}));
-   for(const [i,piece] of pieces.entries()){
-     const deg=kind==='dream'?[105,78,94,65][i]:90;
-     const delay=kind==='dream'?[0,25,8,38][i]:0;
-     flip.animations.push(piece.animate([{transform:'rotateY(0deg)'},{transform:'rotateY('+deg+'deg)'}],{duration:(kind==='dream'?DREAM_MS:WAKE_MS)-delay,delay,easing:kind==='dream'?'steps(2,end)':IN_CURVE,fill:'both'}));
-   }
- }
- function continueFlip(){
-   if(!flip)return;
-   const dst=document.querySelector('.portrait-stage .portrait');
-   if(!dst||!atTop()||!fullyVisible(dst)||!sameAnchor(flip.rect,dst.closest('.portrait-stage').getBoundingClientRect())){removeFlip();return}
-   const {layer,kind,pieces}=flip;
-   if(!layer.isConnected){document.querySelector('.portrait-flip-layer')?.remove();document.body.append(layer)}
-   root().dataset.portraitFlip='true';
-   const end=dst.closest('.portrait-stage').getBoundingClientRect(),duration=kind==='dream'?DREAM_MS:WAKE_MS;
-   flip.animations.push(layer.animate([{transform:'rotate(0deg)'},{transform:'rotate('+(-flip.angle)+'deg)'}],{duration,easing:kind==='dream'?'steps(2,end)':OUT_CURVE,fill:'both'}));
-   place(layer,end);
-   for(const [i,piece] of pieces.entries()){
-     const deg=kind==='dream'?[105,78,94,65][i]:90;
-     flip.animations.push(piece.animate([{transform:'rotateY('+deg+'deg)'},{transform:'rotateY(180deg)'}],{duration,easing:kind==='dream'?'steps(2,end)':OUT_CURVE,fill:'both'}));
    }
  }
  // Astro 5.18.2 starts the native view transition after its awaited loader.
@@ -268,7 +185,7 @@
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const painted=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  function clearMotion(){
-   clearTimeout(guard);clearTimeout(finish);restoreNative?.();cancelWake();removeFlip();
+   clearTimeout(guard);clearTimeout(finish);restoreNative?.();cancelWake();
    delete root().dataset.dreamFrame;delete root().dataset.wakePhase;clearWords(document);
    document.querySelector('.dream-mosaic')?.remove();
  }
@@ -294,7 +211,6 @@
      armGuard(token);
      if(from==='academic'&&next==='personal'){
        styleFrame(document,1);styleFrame(doc,2);
-       createFlip(doc,'dream',e.to?.href||location.href);
        await wait(DREAM_MS);if(valid())skipNextNative(token);
      }else if(from==='personal'&&next==='academic'){
        // All loading is finished before the animation begins. Set target
@@ -303,7 +219,6 @@
        root().dataset.wakePhase='out';
        const end=capture();animateWake(before,end,false);
        doc.documentElement.dataset.wakePhase='hold-in';
-       createFlip(doc,'wake',e.to?.href||location.href);
        await wait(WAKE_MS);
        if(valid())skipNextNative(token)
      }
@@ -312,12 +227,11 @@
  });
  document.addEventListener('astro:before-swap',e=>{
    const next=e.newDocument.documentElement;
-   cancelOnViewportChange();
    if(!quiet()&&next.dataset.mode!==root().dataset.mode){
      // Native snapshots can add extra crossfade frames. Skip that animation,
      // while retaining Astro's atomic DOM swap and history handling.
      const vt=e.viewTransition;vt?.ready?.catch(()=>{});try{vt?.skipTransition?.()}catch{}
-   }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;delete next.dataset.portraitFlip;clearMotion()}
+   }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;clearMotion()}
  });
  function detect(){
    const next=root().dataset.mode;
@@ -326,7 +240,7 @@
  }
  async function start(next,token){
    if(token!==generation||next!==root().dataset.mode||quiet())return;
-   armGuard(token);continueFlip();
+   armGuard(token);
    if(next==='academic'){
      // Do not wait for page-load, a timer, or another animation frame:
      // compute the incoming start/end and begin easing before the next paint.

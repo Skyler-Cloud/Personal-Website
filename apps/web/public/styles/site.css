@@ -186,21 +186,12 @@ html[data-wake-phase] .portrait{opacity:1!important}
 html[data-mode=personal][data-wake-phase] .portrait{filter:none!important}
 html[data-mode=academic][data-wake-phase] .portrait{filter:grayscale(1)!important}
 html[data-wake-phase]::view-transition-group(*),html[data-wake-phase]::view-transition-old(*),html[data-wake-phase]::view-transition-new(*){animation:none!important}
-/* Persistent, pointer-transparent photograph; two real faces, not mirrored text
-   or a blend between faces. Geometry follows the destination portrait. */
-html[data-portrait-flip] .portrait-stage .portrait{visibility:hidden!important}
-.portrait-flip-layer{position:fixed;z-index:20;pointer-events:none;perspective:650px;overflow:visible;transform-origin:0 0;isolation:isolate}
-.portrait-flip-piece{position:absolute;top:0;height:100%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform-origin:center center;will-change:transform}
-.portrait-flip-face{position:absolute;inset:0;background-repeat:no-repeat;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 2px 8px #14131f30}
-.portrait-flip-back{transform:rotateY(180deg)}
-.portrait-flip-layer[data-kind=dream] .portrait-flip-face{box-shadow:1.5px 0 #28b8d6,-1.5px 0 #d95197}
-@media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-mosaic,.portrait-flip-layer{display:none!important}html[data-portrait-flip] .portrait-stage .portrait{visibility:visible!important}}
+@media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-mosaic{display:none!important}}
 
 /* Slightly opposing photo angles, centered on the same layout anchor. */
 html[data-mode=academic]{--portrait-angle:-2deg}
 html[data-mode=personal]{--portrait-angle:2deg}
 .home-profile .portrait{transform:rotate(var(--portrait-angle));transform-origin:center}
-.portrait-flip-layer{transform-origin:center}
 /* Personal: two overlapping solid-color cut-paper panels.
    The darker top panel provides contrast for the white text. */
 html[data-mode=personal] .writing-entry{position:relative;isolation:isolate}

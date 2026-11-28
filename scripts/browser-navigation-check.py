@@ -174,16 +174,16 @@ with tempfile.TemporaryDirectory() as temp:
                     assert motion.locator("body").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(255, 255, 255)"
                     assert motion.locator(".portrait-flip-layer").count() == 0
                     motion.close()
-                    # Scrolled mode changes must never lift a detached portrait
-                    # from the old viewport. DOM clicks avoid Playwright scrolling
+                    # Mode changes must never detach or hide the portrait, at any scroll
+                    # offset. DOM clicks avoid Playwright scrolling
                     # the offscreen navigation link back into view.
                     scrolled = browser.new_page(viewport={"width":390,"height":500}, reduced_motion="no-preference")
                     for source,target in (("academic","personal"),("personal","academic")):
-                        for offset in (100, 330):
+                        for offset in (0, 100, 330):
                             scrolled.goto(url+source+"/")
                             scrolled.wait_for_load_state("networkidle")
                             scrolled.evaluate("(y)=>window.scrollTo(0,y)",offset)
-                            scrolled.wait_for_function("window.scrollY > 2")
+                            scrolled.wait_for_function("window.scrollY > 2" if offset else "window.scrollY < 2")
                             scrolled.evaluate("""window.__strayFlip=false;new MutationObserver(()=>{if(document.querySelector('.portrait-flip-layer')||document.documentElement.hasAttribute('data-portrait-flip'))window.__strayFlip=true}).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['data-portrait-flip']})""")
                             scrolled.locator('a[data-mode-target="'+target+'"]').first.evaluate("(a)=>a.click()")
                             expect(scrolled.locator("html")).to_have_attribute("data-mode",target)

@@ -148,3 +148,5 @@ Personal hover revision: both angular panels are solid fills, not outlines. A br
 Personal writing hover now lifts the whole two-color cut-paper card and its white text by 2px, scales it by 1.018, and tilts it −0.8° with a soft shadow. The outer row remains fixed to prevent reflow; reduced-motion and forced-colors users get a stationary highlight.
 
 Portrait flip scroll guard: the two-sided overlay only runs at the top of a page with a fully visible, matching portrait anchor. Scrolled navigation keeps normal route/scroll behavior and the usual palette/glitch transition, but skips the detached photo overlay. Scrolling or resizing during a flip cancels it and restores both portraits, including the pending destination DOM.
+
+Portrait animation update: the experimental card flip and fragmented flip have been removed from both mode transitions. Photos retain their opposing static tilts and switch with the page DOM. The palette and two-pose glitch animations remain unchanged. Regression coverage now checks both mode directions at the top and at scrolled positions.
