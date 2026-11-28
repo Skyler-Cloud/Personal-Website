@@ -108,11 +108,13 @@ with tempfile.TemporaryDirectory() as temp:
                     assert link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')") == bands
                     assert link.evaluate("(el)=>getComputedStyle(el).backgroundImage") == "none"
                     motion.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal",exact=True).click()
-                    motion.wait_for_function("window.__frames.some(x=>x[0]==='personal'&&x[1]==='3')")
+                    motion.wait_for_function("window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-dream-frame')")
                     assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1') && window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
                     assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1'&&x[2]>0)")
                     assert motion.locator(".glitch-word").count() == 0
+                    assert motion.evaluate("window.__frames.every(x=>x[1]!=='3')")
+                    assert motion.locator(".portrait-flip-layer").count() == 0
                     expect(motion.locator(".dream-scene")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     personal_link = motion.locator(".writing-entry h3 a").first
@@ -132,6 +134,7 @@ with tempfile.TemporaryDirectory() as temp:
                     motion.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase')")
                     expect(motion.locator("html")).to_have_attribute("data-mode","academic")
                     assert motion.locator("body").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(255, 255, 255)"
+                    assert motion.locator(".portrait-flip-layer").count() == 0
                     motion.close()
                     plain = browser.new_page(java_script_enabled=False)
                     plain.goto(url)

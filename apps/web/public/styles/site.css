@@ -134,9 +134,8 @@ html{background-color:var(--page)}
 /* A single inline SVG mosaic per document. No image decoding, interpolated
    backgrounds, or 25% intermediate pose. Frame 1 remains paper-white. */
 .dream-mosaic{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
-html[data-dream-frame="2"] .dream-mosaic,html[data-dream-frame="3"] .dream-mosaic{display:block}
+html[data-dream-frame="2"] .dream-mosaic{display:block}
 .dream-mosaic .mosaic-extra{visibility:hidden}
-html[data-dream-frame="3"] .dream-mosaic .mosaic-extra{visibility:visible}
 html[data-dream-frame] body{background-color:#fff}
 html[data-dream-frame] body::before{opacity:.05}
 html[data-dream-frame] main,html[data-dream-frame] main *,
@@ -158,40 +157,33 @@ html[data-dream-frame] main :is(.section-head,.writing-entry,.mode-nav,.site-foo
 html[data-dream-frame] .dream-scene{background-color:#25223d}
 html[data-dream-frame] .dream-layer{opacity:.72}
 
-/* Waking: CSS supplies two endpoint palettes; Web Animations interpolates
-   the real element colors with independent amounts. No uniform veil, no
-   native snapshot crossfade, no CSS transition lingering at the cut. */
-html[data-wake-phase=out]{
- --page:#444552;--body:#cbc9cf;--heading:#c9c7ce;--link:#aeaacb;--muted:#a8a5ba;
- --rule:#605f71;--rose-text:#b2aed1;--orange-text:#c2a0ac;--rose-line:#605f71;--peach-line:#69657d;
- --rose-surface:#4c4e60;--peach-surface:#564e5f;--lavender-surface:#505268;
+
+/* The outgoing and incoming halves share the SAME midpoint palette.
+   Each element moves with its own bounded timing, but lands at the seam. */
+html[data-wake-phase=out],html[data-wake-phase=hold-in]{
+ --page:#8a8a92;--body:#777580;--heading:#777580;--link:#746d8c;--muted:#8a8799;
+ --rule:#807f8b;--rose-text:#8f889f;--orange-text:#957584;--rose-line:#807f8b;--peach-line:#868198;
+ --rose-surface:#8a8b95;--peach-surface:#8e8794;--lavender-surface:#898b99;
 }
-html[data-wake-phase=hold-in]{
- --page:#d0d0d3;--body:#393441;--heading:#382e45;--link:#453b55;--muted:#777084;
- --rule:#a09fab;--rose-text:#635a76;--orange-text:#63434f;--rose-line:#a09fab;--peach-line:#a29eab;
- --rose-surface:#c7c7c9;--peach-surface:#c6c3c9;--lavender-surface:#c7c7ca;
-}
-html[data-wake-phase],html[data-wake-phase] *,html[data-wake-phase] *::before,html[data-wake-phase] *::after{
- transition:none!important;animation:none!important;
-}
-html[data-wake-phase=out] .home-profile{background-color:rgba(117,104,155,.23)}
-html[data-wake-phase=out] .dream-scene{background-color:#41414f}
-html[data-wake-phase=out] .dream-layer{opacity:.78}
+html[data-wake-phase],html[data-wake-phase] *,html[data-wake-phase] *::before,html[data-wake-phase] *::after{transition:none!important;animation:none!important}
+html[data-wake-phase=out] .home-profile{background-color:rgba(143,125,177,.12)}
+html[data-wake-phase=out] .dream-scene{background-color:var(--page)}
+html[data-wake-phase=out] .dream-layer{opacity:.42}
 html[data-wake-phase=out] .dream-caption,html[data-wake-phase=out] .site-mark{color:var(--muted)}
 html[data-wake-phase] .writing-entry h3 a{background-image:none!important;-webkit-text-fill-color:currentColor!important}
 html[data-mode=personal][data-wake-phase] .writing-entry h3 a{color:var(--link)}
-html[data-mode=academic][data-wake-phase] .masthead h1,
-html[data-mode=academic][data-wake-phase] .section-head h2{
- background-image:none!important;color:var(--heading);-webkit-text-fill-color:currentColor!important;
-}
+html[data-mode=academic][data-wake-phase] .masthead h1,html[data-mode=academic][data-wake-phase] .section-head h2{background-image:none!important;color:var(--heading);-webkit-text-fill-color:currentColor!important}
 html[data-wake-phase] .writing-entry h3 a::after{transform:scaleX(0)}
-html[data-wake-phase=hold-in] .portrait{border-color:var(--rule)}
-/* Portrait stays crisp; the two existing photos cut with their own layouts.
-   Future character/portrait animation can be designed independently. */
 html[data-wake-phase] .portrait{opacity:1!important}
 html[data-mode=personal][data-wake-phase] .portrait{filter:none!important}
 html[data-mode=academic][data-wake-phase] .portrait{filter:grayscale(1)!important}
-html[data-wake-phase]::view-transition-group(*),
-html[data-wake-phase]::view-transition-old(*),
-html[data-wake-phase]::view-transition-new(*){animation:none!important}
-@media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-mosaic{display:none!important}}
+html[data-wake-phase]::view-transition-group(*),html[data-wake-phase]::view-transition-old(*),html[data-wake-phase]::view-transition-new(*){animation:none!important}
+/* Persistent, pointer-transparent photograph; two real faces, not mirrored text
+   or a blend between faces. Geometry follows the destination portrait. */
+html[data-portrait-flip] .portrait-stage .portrait{visibility:hidden!important}
+.portrait-flip-layer{position:fixed;z-index:20;pointer-events:none;perspective:650px;overflow:visible;transform-origin:0 0;isolation:isolate}
+.portrait-flip-piece{position:absolute;top:0;height:100%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform-origin:center center;will-change:transform}
+.portrait-flip-face{position:absolute;inset:0;background-repeat:no-repeat;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 2px 8px #14131f30}
+.portrait-flip-back{transform:rotateY(180deg)}
+.portrait-flip-layer[data-kind=dream] .portrait-flip-face{box-shadow:1.5px 0 #28b8d6,-1.5px 0 #d95197}
+@media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-mosaic,.portrait-flip-layer{display:none!important}html[data-portrait-flip] .portrait-stage .portrait{visibility:visible!important}}

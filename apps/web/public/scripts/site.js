@@ -2,7 +2,7 @@
 
 
 (()=>{'use strict';
- if(window.__dreamMotionV5Installed)return;window.__dreamMotionV5Installed=true;
+ if(window.__dreamMotionV6Installed)return;window.__dreamMotionV6Installed=true;
  const root=()=>document.documentElement;
  const reduce=matchMedia('(prefers-reduced-motion: reduce)'),forced=matchMedia('(forced-colors: active)');
  const quiet=()=>reduce.matches||forced.matches;
@@ -34,11 +34,11 @@
  });
  document.addEventListener('focusin',e=>{const a=titleFrom(e.target);if(a&&a!==titleFrom(e.relatedTarget)&&!a.matches(':hover'))cycle(a)});
  const NS='http://www.w3.org/2000/svg';
- const mosaic50=[[11,3,2,2],[0,11,2,1],[11,10,5,1],[5,0,6,4],[2,2,2,4],[14,11,2,1],[10,8,1,3],[15,1,1,2],[0,9,2,2],[11,0,5,1],[5,4,6,3],[0,0,5,2],[0,2,2,4],[8,8,1,1]], mosaicExtra=[[11,7,2,3],[11,5,2,2],[5,7,6,1],[4,2,1,4],[13,6,3,4],[11,1,4,2],[0,6,2,3],[8,9,1,2]];
+ const mosaic50=[[11,3,2,2],[0,11,2,1],[11,10,5,1],[5,0,6,4],[2,2,2,4],[14,11,2,1],[10,8,1,3],[15,1,1,2],[0,9,2,2],[11,0,5,1],[5,4,6,3],[0,0,5,2],[0,2,2,4],[8,8,1,1]];
  function ensureMosaic(doc){
    if(doc.querySelector('.dream-mosaic'))return;
    const svg=doc.createElementNS(NS,'svg');svg.setAttribute('class','dream-mosaic');svg.setAttribute('aria-hidden','true');svg.setAttribute('viewBox','0 0 16 12');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('shape-rendering','crispEdges');svg.setAttribute('fill','#151625');
-   for(const [tiles,extra] of [[mosaic50,false],[mosaicExtra,true]]){
+   for(const [tiles,extra] of [[mosaic50,false]]){
      const g=doc.createElementNS(NS,'g');if(extra)g.setAttribute('class','mosaic-extra');
      for(const [x,y,w,h] of tiles){const r=doc.createElementNS(NS,'rect');for(const [k,v] of Object.entries({x,y,width:w,height:h}))r.setAttribute(k,String(v));g.append(r)}svg.append(g);
    }
@@ -92,7 +92,7 @@
  }
 
  // Two quadratic-like curves: accelerate into the cut, decelerate after it.
- const WAKE_MS=270, IN_CURVE='cubic-bezier(.55,.085,.68,.53)', OUT_CURVE='cubic-bezier(.25,.46,.45,.94)';
+ const WAKE_MS=300, DREAM_MS=200, IN_CURVE='cubic-bezier(.55,.085,.68,.53)', OUT_CURVE='cubic-bezier(.25,.46,.45,.94)';
  const props=['color','backgroundColor','borderTopColor','borderRightColor','borderBottomColor','borderLeftColor','outlineColor','fill','stroke','opacity','filter'];
  const pastel=['#e9c0db','#d7c5f0','#c3d3ee','#e2d1f3'];
  const shadowInk=['#5e3659','#51406f','#3b496b','#694157'];
@@ -124,39 +124,81 @@
    }
    return result;
  }
- function vary(a,b,el,i,incoming){
-   const tint=incoming?shadowInk[i%shadowInk.length]:pastel[i%pastel.length];
-   const p=.63+((i*37+11)%13)/20; // 63–123% of nominal 20% endpoint
-   const out={...b};
-   for(const k of Object.keys(b)){
-     if(k==='opacity'||k==='filter')continue;
-     if(!parseColor(a[k]||'')||!parseColor(b[k]||''))continue;
-     const base=blend(a[k],b[k],p);
-     const c=parseColor(base);
-     // Stable small deviations, no random changes mid-animation. Leave the
-     // two canvas layers on exactly the same color, avoiding visible seams.
-     out[k]=(el===root()||el===document.body||!c||c[3]<.01)?b[k]:
-       blend(base,tint,k==='backgroundColor'?.07: .045+((i*7)%5)*.025);
-   }
-   if('opacity' in b){
-     const op=Number(b.opacity);out.opacity=String(Math.max(0,Math.min(1,op*(.84+((i*11)%7)*.025))));
-   }
-   // No dark veil on the portrait. Other artwork gets a gentle color wash
-   // through saturation/brightness rather than a costly full SVG filter.
-   if('filter' in b)out.filter=incoming?'saturate(.8) brightness(.93)':'saturate(.76) brightness(1.06)';
-   return out;
- }
- let wakeAnimations=[],restoreNative=null;
+
+ let wakeAnimations=[],restoreNative=null,flip=null;
  function cancelWake(){for(const a of wakeAnimations){try{a.cancel()}catch{}}wakeAnimations=[]}
  function animateWake(from,to,incoming){
    cancelWake();let i=0;
    for(const [el,target] of to){
      const original=from.get(el);if(!original)continue;
-     const endpoint=incoming?vary(target,original,el,i++,true):vary(original,target,el,i++,false);
-     const a=incoming?endpoint:original,b=incoming?target:endpoint;
-     const f={},t={};for(const k of Object.keys(b)){if(a[k]!==undefined&&a[k]!==b[k]){f[k]=a[k];t[k]=b[k]}}
+     const canvas=el===root()||el===document.body;
+     const k=i++,delay=canvas?0:(k*17%37),tail=canvas?0:(k*13%32);
+     const duration=WAKE_MS-delay-tail;
+     const f={},t={},mid={};
+     for(const key of Object.keys(target)){
+       if(original[key]===undefined||original[key]===target[key])continue;
+       f[key]=original[key];t[key]=target[key];
+       const c=parseColor(blend(f[key],t[key],.5));
+       if(!canvas&&c&&c[3]>.01){
+         const tint=(incoming?shadowInk:pastel)[k%4];
+         mid[key]=blend(blend(f[key],t[key],.5),tint,.06+((k*7)%5)*.02);
+       }else mid[key]=parseColor(f[key])&&parseColor(t[key])?blend(f[key],t[key],.5):f[key];
+     }
      if(!Object.keys(f).length)continue;
-     try{wakeAnimations.push(el.animate([f,t],{duration:WAKE_MS,easing:incoming?OUT_CURVE:IN_CURVE,fill:'both'}))}catch{}
+     // Endpoints are exact, only midpoints and timing are perturbed.
+     try{wakeAnimations.push(el.animate([f,{...mid,offset:.5},t],{delay,duration,easing:incoming?OUT_CURVE:IN_CURVE,fill:'both'}))}catch{}
+   }
+ }
+ function removeFlip(){
+   if(flip){for(const animation of flip.animations)try{animation.cancel()}catch{};flip.layer.remove();flip=null}
+   document.querySelectorAll('.portrait-flip-layer').forEach(el=>el.remove());
+   delete root().dataset.portraitFlip;
+ }
+ function place(layer,r){Object.assign(layer.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'})}
+ function createFlip(doc,kind,destURL){
+   const src=document.querySelector('.portrait-stage .portrait'),dst=doc.querySelector('.portrait-stage .portrait');
+   if(!src||!dst||!src.complete||!src.naturalWidth||!src.getClientRects().length)return;
+   let destination;try{destination=new URL(dst.getAttribute('src'),destURL).href}catch{return}
+   const r=src.getBoundingClientRect();if(r.width<1||r.height<1||r.bottom<0||r.top>innerHeight)return;
+   const layer=document.createElement('div');layer.className='portrait-flip-layer';layer.dataset.kind=kind;layer.setAttribute('aria-hidden','true');layer.setAttribute('data-astro-transition-persist','portrait-mode-flip');
+   place(layer,r);
+   const widths=kind==='dream'?[.25,.34,.18,.23]:[1];
+   let start=0;
+   const pieces=[];
+   for(const width of widths){
+     const piece=document.createElement('div');piece.className='portrait-flip-piece';Object.assign(piece.style,{left:(start*100)+'%',width:(width*100)+'%'});
+     for(const [idx,url] of [src.currentSrc||src.src,destination].entries()){
+       const face=document.createElement('div');face.className='portrait-flip-face'+(idx?' portrait-flip-back':'');
+       // Background is sized to the whole photo, then each slice shows
+       // the appropriate region. Use a full-card image inside a clipped face.
+       const image=document.createElement('img');image.src=url;image.alt='';image.draggable=false;
+       Object.assign(image.style,{position:'absolute',width:(100/width)+'%',maxWidth:'none',height:'100%',left:(-start/width*100)+'%',top:'0',objectFit:'cover',objectPosition:'center',filter:(idx?doc.documentElement.dataset.mode:root().dataset.mode)==='academic'?'grayscale(1)':'none'});
+       face.style.overflow='hidden';face.append(image);piece.append(face);
+     }
+     layer.append(piece);pieces.push(piece);start+=width;
+   }
+   document.body.append(layer);
+   const marker=doc.createElement('div');marker.className='portrait-flip-layer';marker.setAttribute('data-astro-transition-persist','portrait-mode-flip');marker.setAttribute('aria-hidden','true');doc.body.append(marker);
+   root().dataset.portraitFlip='true';doc.documentElement.dataset.portraitFlip='true';
+   flip={layer,pieces,kind,rect:r,animations:[]};
+   for(const [i,piece] of pieces.entries()){
+     const deg=kind==='dream'?[105,78,94,65][i]:90;
+     const delay=kind==='dream'?[0,25,8,38][i]:0;
+     flip.animations.push(piece.animate([{transform:'rotateY(0deg)'},{transform:'rotateY('+deg+'deg)'}],{duration:(kind==='dream'?DREAM_MS:WAKE_MS)-delay,delay,easing:kind==='dream'?'steps(2,end)':IN_CURVE,fill:'both'}));
+   }
+ }
+ function continueFlip(){
+   if(!flip)return;
+   const dst=document.querySelector('.portrait-stage .portrait');
+   if(!dst){removeFlip();return}
+   const {layer,rect,kind,pieces}=flip;
+   if(!layer.isConnected){document.querySelector('.portrait-flip-layer')?.remove();document.body.append(layer)}
+   root().dataset.portraitFlip='true';
+   const end=dst.getBoundingClientRect(),duration=kind==='dream'?DREAM_MS:WAKE_MS;
+   flip.animations.push(layer.animate([{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px'},{left:end.left+'px',top:end.top+'px',width:end.width+'px',height:end.height+'px'}],{duration,easing:OUT_CURVE,fill:'both'}));
+   for(const [i,piece] of pieces.entries()){
+     const deg=kind==='dream'?[105,78,94,65][i]:90;
+     flip.animations.push(piece.animate([{transform:'rotateY('+deg+'deg)'},{transform:'rotateY(180deg)'}],{duration,easing:kind==='dream'?'steps(2,end)':OUT_CURVE,fill:'both'}));
    }
  }
  // Astro 5.18.2 starts the native view transition after its awaited loader.
@@ -181,7 +223,7 @@
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const painted=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  function clearMotion(){
-   clearTimeout(guard);clearTimeout(finish);restoreNative?.();cancelWake();
+   clearTimeout(guard);clearTimeout(finish);restoreNative?.();cancelWake();removeFlip();
    delete root().dataset.dreamFrame;delete root().dataset.wakePhase;clearWords(document);
    document.querySelector('.dream-mosaic')?.remove();
  }
@@ -207,7 +249,8 @@
      armGuard(token);
      if(from==='academic'&&next==='personal'){
        styleFrame(document,1);styleFrame(doc,2);
-       await painted();await wait(200);
+       createFlip(doc,'dream',e.to?.href||location.href);
+       await wait(DREAM_MS);if(valid())skipNextNative(token);
      }else if(from==='personal'&&next==='academic'){
        // All loading is finished before the animation begins. Set target
        // styles and install starting keyframes in the same JS turn.
@@ -215,6 +258,7 @@
        root().dataset.wakePhase='out';
        const end=capture();animateWake(before,end,false);
        doc.documentElement.dataset.wakePhase='hold-in';
+       createFlip(doc,'wake',e.to?.href||location.href);
        await wait(WAKE_MS);
        if(valid())skipNextNative(token)
      }
@@ -227,7 +271,7 @@
      // Native snapshots can add extra crossfade frames. Skip that animation,
      // while retaining Astro's atomic DOM swap and history handling.
      const vt=e.viewTransition;vt?.ready?.catch(()=>{});try{vt?.skipTransition?.()}catch{}
-   }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;clearMotion()}
+   }else{delete next.dataset.dreamFrame;delete next.dataset.wakePhase;delete next.dataset.portraitFlip;clearMotion()}
  });
  function detect(){
    const next=root().dataset.mode;
@@ -236,7 +280,7 @@
  }
  async function start(next,token){
    if(token!==generation||next!==root().dataset.mode||quiet())return;
-   armGuard(token);
+   armGuard(token);continueFlip();
    if(next==='academic'){
      // Do not wait for page-load, a timer, or another animation frame:
      // compute the incoming start/end and begin easing before the next paint.
@@ -248,9 +292,7 @@
      finish=setTimeout(()=>{if(token===generation)clearMotion()},WAKE_MS+20);return;
    }
    if(root().dataset.dreamFrame!=='2')styleFrame(document,2);
-   await painted();await wait(200);if(token!==generation||quiet())return;
-   styleFrame(document,3);
-   await painted();await wait(200);if(token===generation)clearMotion();
+   await wait(DREAM_MS);if(token===generation)clearMotion();
  }
  function visible(){detect();if(!pending)return;const next=pending,token=generation;pending=null;start(next,token)}
  // Start from the actual newly swapped DOM, not from page-load (which may
