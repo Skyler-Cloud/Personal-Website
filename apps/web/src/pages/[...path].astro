@@ -12,6 +12,7 @@ import MarkdownIt from 'markdown-it';
 import texmath from 'markdown-it-texmath';
 import katex from 'katex';
 import {FileRepository} from '../../../../packages/storage/files.ts';
+import {safeAsset} from '../../../../packages/core/index.ts';
 import {renderPages,renderFooter} from '../../../../packages/frontend/render.ts';
 import {tokenCSS} from '../../../../packages/frontend/tokens.ts';
 export async function getStaticPaths(){
@@ -23,6 +24,18 @@ export async function getStaticPaths(){
   const data=await new FileRepository(root,parse).load();
   const md=new MarkdownIt({html:false,linkify:true,typographer:false}).use(texmath,{engine:katex,delimiters:'dollars',katexOptions:{throwOnError:true,trust:false,strict:'warn'}});
   const base=import.meta.env.BASE_URL.endsWith('/')?import.meta.env.BASE_URL:import.meta.env.BASE_URL+'/';
+  // Obsidian relative attachments resolve against the content vault, not the article URL.
+  for(const [rule,attr] of [['image','src'],['link_open','href']] as const){
+    const original=md.renderer.rules[rule];
+    md.renderer.rules[rule]=(tokens,idx,opts,env,self)=>{
+      const token=tokens[idx], value=token.attrGet(attr);
+      if(value){
+        const path=value.replace(/^\.\.\//,'').replace(/^\.\//,'');
+        if(safeAsset(path))token.attrSet(attr,base+path);
+      }
+      return original?original(tokens,idx,opts,env,self):self.renderToken(tokens,idx,opts);
+    };
+  }
   return renderPages(data,{base,markdown:s=>md.render(s)}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
 }
 const {page,site,base,tokens:css}=Astro.props;

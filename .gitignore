@@ -9,3 +9,7 @@ preview-output/
 
 # Generated mirror of content/assets; edit the source directory instead.
 /apps/web/public/assets/
+
+# Obsidian local settings/plugins may contain access tokens.
+.obsidian/
+.trash/

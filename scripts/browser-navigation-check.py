@@ -41,6 +41,14 @@ with tempfile.TemporaryDirectory() as temp:
                     nav = page.get_by_role("navigation", name="Website section")
                     navigate("Personal", "personal/", nav)
                     expect(page.locator("html")).to_have_attribute("data-mode", "personal")
+                    assert page.locator(".home-layout").evaluate("(el)=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 1
+                    assert page.locator("h1").evaluate("(el)=>parseFloat(getComputedStyle(el).fontSize)") <= 38
+                    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                    page.set_viewport_size({"width": 1280, "height": 900})
+                    assert page.locator(".home-layout").evaluate("(el)=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 2
+                    assert page.locator(".home-profile").bounding_box()["x"] < page.locator(".home-content").bounding_box()["x"]
+                    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                    page.set_viewport_size({"width":390,"height":844})
                     navigate("View gallery →", "personal/gallery/")
                     page.locator("[data-filter='artwork']").click()
                     assert page.locator(".gallery-item:not([hidden])").count() > 0

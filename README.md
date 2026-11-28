@@ -20,7 +20,7 @@ Production uses locally bundled Play (bold) and Nunito, Markdown-It, and KaTeX. 
 ## Content workflow
 
 - `content/site.json`: shared name, writing limit and category assignments, plus sibling `academic` and `personal` profiles. Each owns its bio, description, portrait, alt text and email. Academic also owns education, publications, CV and GitHub; Personal owns its contact message and gallery limit.
-- `content/writing/`: one Markdown file per article. The filename is a stable URL slug. JSON frontmatter (also valid YAML) is used in the examples; the production build accepts YAML as well.
+- `content/writing/`: one Markdown file per article. The filename is a stable URL slug. Standard YAML frontmatter works directly in Obsidian Properties; JSON frontmatter is also supported for older articles.
 - `content/gallery/`: one JSON record per artwork/photo, with image, alt text, title, medium and date. Put image files under `content/assets/`. Actual artwork is displayed uncropped on its detail page.
 - `content/properties.json`: writing categories and typed custom-property definitions.
 - `content/views.json`: visible fields, order and empty-field rules for the homepage, writing list, article and category-specific views. Title is always displayed. Change these independently of the content.
@@ -46,6 +46,10 @@ Write here. Omit any optional properties you don't want to fill in.
 Types are `notes`, `technical`, `personal`, `review`. Add `"draft": true` to exclude a post from the public build. Draft files are still visible to anyone who can access the source repository, so keep private drafts outside a public repository. Rating zero is a real value, not an empty field. The initial scale is 0–5; change `min`, `max`, and `suffix` in the property definition if desired.
 
 For an example custom field, add `{"id":"author","label":"Author","type":"text","categories":["review"]}` to the `fields` array, add `"author":"..."` to review frontmatter, and add `"author"` to the desired view's `fields` array. No renderer changes are needed for these supported field types. URL fields accept only HTTP(S).
+
+## Editing with Obsidian
+
+Clone the repository using GitHub Desktop, then open the local `content/` folder as a vault. Set Files and links → Use Wikilinks off, New link format → Relative path to file, Default location for new attachments → In the folder specified below, and Attachment folder path → assets. Use `templates/post.md` as an optional template and save publishable notes in writing/ using lower-case hyphenated filenames. Sync by reviewing, committing and pushing in GitHub Desktop; pull before editing on another device. Local .obsidian settings (including plugins and tokens) are ignored. Never sync private notes or drafts to this public repository. This is a file-based editing workflow, not an installed or authenticated Obsidian/Notion sync service.
 
 ## Media assets
 
