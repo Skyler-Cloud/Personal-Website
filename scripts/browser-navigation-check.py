@@ -102,8 +102,11 @@ with tempfile.TemporaryDirectory() as temp:
                         for selector in snapshots[0]:
                             # Different bio lengths and featured content can affect
                             # height, but not their top-left position or width.
-                            fields = 4 if selector in (".home-profile .masthead h1", ".portrait-stage .portrait") else 3
-                            assert all(abs(a-b)<1 for a,b in zip(snapshots[0][selector][:fields],snapshots[1][selector][:fields])), (width,selector,snapshots)
+                            fields = (0,1,2,3) if selector in (".home-profile .masthead h1", ".portrait-stage .portrait") else (0,1,2)
+                            if width < 800 and selector == ".home-content":
+                                # Stacked content follows the variable-length intro.
+                                fields = (0,2)
+                            assert all(abs(snapshots[0][selector][i]-snapshots[1][selector][i])<1 for i in fields), (width,selector,snapshots)
                     geometry.close()
                     # Observe the actual outgoing and incoming DOM states.
                     motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase,performance.now()]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
