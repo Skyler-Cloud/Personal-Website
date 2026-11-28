@@ -7,10 +7,10 @@
  const clear=()=>{clearTimeout(cleanup);delete document.documentElement.dataset.modeMotion;document.querySelectorAll('[data-reveal-motion]').forEach(el=>{delete el.dataset.revealMotion;for(const k of ['--dream-delay','--glitch-a','--glitch-b','--glitch-c'])el.style.removeProperty(k);});};
  function reveal(){
    const root=document.documentElement,next=root.dataset.mode;
-   if(next===previous)return;
+   if(next===previous){if(!root.dataset.modeMotion)clear();return;}
    previous=next;clear();const token=++generation;
    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-   const els=[...document.querySelectorAll('main h1,main .section-head h2,main .writing-entry h3,main .mode-nav a,main .bio')].slice(0,24);
+   const els=[...document.querySelectorAll('main h1,main .section-head h2,main .writing-entry h3 a,main .writing-entry h3:not(:has(a)),main .mode-nav a,main .bio > p')].slice(0,24);
    for(const el of els){
      const c=[...palette];for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]]}
      el.style.setProperty('--dream-delay',Math.floor(Math.random()*130)+'ms');

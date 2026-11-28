@@ -115,3 +115,12 @@ html[data-mode-motion=enter] .dream-scene{animation:dream-space .85s both}
 @media(forced-colors:active){
  html[data-mode=academic] .masthead h1,html[data-mode=academic] .section-head h2,.writing-entry h3 a{color:CanvasText!important;background:none!important}
 }
+
+/* Final legibility and local-art hooks. */
+.dream-layer--art svg{display:block}
+.dream-layer--art{background-image:var(--dream-art,none)}
+.character-slot{background-image:var(--character-art,none);background-size:contain;background-repeat:no-repeat;background-position:right bottom}
+html[data-mode=academic] .home-profile .bio{max-width:300px}
+html[data-mode-motion=enter] .writing-entry h3 a,html[data-mode-motion=exit] .writing-entry h3 a{transition:none}
+html[data-mode-motion=exit] .masthead h1,html[data-mode-motion=exit] .section-head h2{background:none;color:var(--heading)}
+@media(prefers-reduced-motion:reduce){.dream-layer{animation:none}}
