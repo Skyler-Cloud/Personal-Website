@@ -142,3 +142,5 @@ Current design: waking uses a continuous shared midpoint palette (300 ms each si
 Homepage alignment: both modes share name size, profile padding, upright 136px portrait, photo border geometry, and bio width. Academic uses a light-gray panel, Personal retains its translucent purple panel. The temporary dream banner remains in markup as a future art hook but is hidden and occupies no layout space. Featured sections and bio heights remain content-driven.
 
 Profile photographs now tilt −2° Academic / +2° Personal around the same center, with the flip layer rotating to upright at the seam and back to the destination tilt. Personal writing hover/focus uses two offset angular SVG outlines around the complete article row; two distinct random colors are chosen on each re-entry, text is white, and the gradient underline is removed. No layout shift or change to Academic hover.
+
+Personal hover revision: both angular panels are solid fills, not outlines. A bright contrasting backing hue and a darker saturated front hue are randomly paired on re-entry to keep white text legible.

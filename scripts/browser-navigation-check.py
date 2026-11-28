@@ -144,6 +144,10 @@ with tempfile.TemporaryDirectory() as temp:
                     expect(personal_row.locator(".dream-entry-frame")).to_have_css("opacity","1")
                     colors = personal_row.evaluate("(el)=>[el.style.getPropertyValue('--dream-frame-back'),el.style.getPropertyValue('--dream-frame-front')]")
                     assert all(colors) and colors[0]!=colors[1]
+                    for part in ("back","front"):
+                        shape = personal_row.locator(".dream-entry-frame-"+part)
+                        assert shape.evaluate("(el)=>getComputedStyle(el).fill") != "none"
+                        expect(shape).to_have_css("stroke","none")
                     motion.mouse.move(2,2)
                     personal_link.hover()
                     assert personal_row.evaluate("(el)=>[el.style.getPropertyValue('--dream-frame-back'),el.style.getPropertyValue('--dream-frame-front')]") != colors

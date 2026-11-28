@@ -201,13 +201,13 @@ html[data-mode=academic]{--portrait-angle:-2deg}
 html[data-mode=personal]{--portrait-angle:2deg}
 .home-profile .portrait{transform:rotate(var(--portrait-angle));transform-origin:center}
 .portrait-flip-layer{transform-origin:center}
-/* Personal: two angular, offset ink frames around the whole writing row.
-   No gradient, no colored title underline, no layout shift. */
+/* Personal: two overlapping solid-color cut-paper panels.
+   The darker top panel provides contrast for the white text. */
 html[data-mode=personal] .writing-entry{position:relative;isolation:isolate}
 .dream-entry-frame{position:absolute;inset:1px -7px 2px;width:calc(100% + 14px);height:calc(100% - 3px);overflow:visible;pointer-events:none;z-index:-1;opacity:0;transition:opacity 100ms ease-out}
-.dream-entry-frame path{stroke-width:1.6;stroke-linejoin:miter}
-.dream-entry-frame-back{stroke:var(--dream-frame-back,#e9c83a)}
-.dream-entry-frame-front{stroke:var(--dream-frame-front,#d95197)}
+.dream-entry-frame path{stroke:none}
+.dream-entry-frame-back{fill:var(--dream-frame-back,#f3d45e)}
+.dream-entry-frame-front{fill:var(--dream-frame-front,#913665)}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-frame{opacity:1}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within),
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) :is(h3,a,p,span,strong,em,div,small,time){color:#fff;-webkit-text-fill-color:currentColor;text-shadow:none}

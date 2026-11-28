@@ -28,12 +28,13 @@
    const i=(Number(a.dataset.hoverIndex||0)+1)%3;a.dataset.hoverIndex=String(i);a.style.setProperty('--hover-color',c[i]);
  }
  function entryFrom(t){return t instanceof Element?t.closest('.writing-entry'):null}
- const dreamInk=['#49cce6','#aa90ff','#f188bd','#f18a69','#f3d45e','#70d89b'];
+ // Each hue has a bright paper backing and a saturated, darker ink face.
+ const dreamInk=[['#49cce6','#14647a'],['#aa90ff','#60419c'],['#f188bd','#913665'],['#f18a69','#a13e2e'],['#f3d45e','#76570f'],['#70d89b','#236944']];
  function dreamHighlight(row){
    if(!row||root().dataset.mode!=='personal')return;
    const prior=row.style.getPropertyValue('--dream-frame-back')+','+row.style.getPropertyValue('--dream-frame-front');
-   let c=shuffled(dreamInk).slice(0,2);
-   if(c.join(',')===prior)c=[c[1],c[0]];
+   const options=dreamInk.flatMap((a,i)=>dreamInk.filter((_,j)=>i!==j).map(b=>[a[0],b[1]])).filter(c=>c.join(',')!==prior);
+   const c=pick(options);
    row.style.setProperty('--dream-frame-back',c[0]);row.style.setProperty('--dream-frame-front',c[1]);
  }
  document.addEventListener('PointerEvent' in window?'pointerover':'mouseover',e=>{
