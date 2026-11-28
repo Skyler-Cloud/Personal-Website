@@ -89,6 +89,22 @@ with tempfile.TemporaryDirectory() as temp:
                     motion.wait_for_load_state("networkidle")
                     expect(motion.locator(".home-profile")).to_be_visible()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(240, 239, 237)"
+                    # Profile anchors must match at both responsive widths.
+                    geometry = browser.new_page(java_script_enabled=False)
+                    for width in (390, 1280):
+                        geometry.set_viewport_size({"width":width,"height":900})
+                        snapshots = []
+                        for mode in ("academic", "personal"):
+                            geometry.goto(url+mode+"/")
+                            geometry.evaluate("document.fonts.ready")
+                            snapshots.append(geometry.evaluate("""() => Object.fromEntries(['.home-profile .masthead h1','.portrait-stage .portrait','.home-profile .bio','.home-content'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,[r.x,r.y,r.width,r.height]]}))"""))
+                        for selector in snapshots[0]:
+                            # Different bio lengths and featured content can affect
+                            # height, but not their top-left position or width.
+                            fields = 4 if selector in (".home-profile .masthead h1", ".portrait-stage .portrait") else 3
+                            assert all(abs(a-b)<1 for a,b in zip(snapshots[0][selector][:fields],snapshots[1][selector][:fields])), (width,selector,snapshots)
+                    geometry.close()
                     # Observe the actual outgoing and incoming DOM states.
                     motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase,performance.now()]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
                     link = motion.locator(".writing-entry h3 a").first
@@ -115,7 +131,7 @@ with tempfile.TemporaryDirectory() as temp:
                     assert motion.locator(".glitch-word").count() == 0
                     assert motion.evaluate("window.__frames.every(x=>x[1]!=='3')")
                     assert motion.locator(".portrait-flip-layer").count() == 0
-                    expect(motion.locator(".dream-scene")).to_be_visible()
+                    expect(motion.locator(".dream-scene")).to_be_hidden()
                     assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
                     personal_link = motion.locator(".writing-entry h3 a").first
                     personal_link.hover()

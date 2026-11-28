@@ -60,7 +60,7 @@ html[data-mode=personal] .site-mark{color:#b3a6e8}
 .portrait{position:relative;z-index:1;width:136px;aspect-ratio:4/5}
 .character-slot{position:absolute;pointer-events:none;z-index:2;inset:0;overflow:visible}
 .home-profile .bio{line-height:1.55}
-html[data-mode=academic] .portrait{border:2px solid #333;transform:rotate(-1deg);filter:grayscale(1);transition:filter .55s}
+html[data-mode=academic] .portrait{border:2px solid #333;filter:grayscale(1);transition:filter .55s}
 html[data-mode=academic] .portrait:hover,html[data-mode=academic] .portrait:focus-visible{filter:none}
 html[data-mode=academic] body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--paper-grain-opacity);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.83' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23n)' opacity='.48' d='M0 0h160v160H0z'/%3E%3C/svg%3E")}
 html[data-mode=academic] .masthead h1,html[data-mode=academic] .section-head h2{
@@ -76,11 +76,18 @@ html[data-mode=academic] a:hover,html[data-mode=academic] a:focus-visible{color:
 }
 .writing-entry h3 a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--reveal);transform:scaleX(0);transform-origin:left;transition:transform .45s ease}
 .writing-entry:hover h3 a::after,.writing-entry:focus-within h3 a::after{transform:scaleX(1)}
-html[data-mode=personal] .home-profile{padding:18px;background:rgba(99,75,151,.29)}
-html[data-mode=personal] .home-profile h1{font-size:clamp(27px,6vw,34px)}
-html[data-mode=personal] .home-profile .portrait{width:112px}
-html[data-mode=personal] .home-profile .intro{flex-direction:column}
-html[data-mode=personal] .dream-scene{height:clamp(105px,16vw,165px);position:relative;isolation:isolate;margin:0 0 24px;background:#10111d;overflow:clip;pointer-events:none}
+/* One shared profile geometry. Only the panel surface and image treatment
+   change with mode. Hide the temporary banner until original art is ready. */
+html{scrollbar-gutter:stable}
+.home-profile{padding:18px;border-right:1px solid transparent;min-width:0}
+html[data-mode=academic] .home-profile{background:var(--rose-surface);border-right-color:var(--rule)}
+html[data-mode=personal] .home-profile{background:rgba(99,75,151,.29)}
+.home-profile h1{font-size:clamp(29px,7vw,38px)}
+.home-profile .intro{flex-direction:column;align-items:flex-start;gap:12px}
+.home-profile .portrait{width:136px;border:2px solid transparent}
+html[data-mode=academic] .home-profile .portrait{border-color:#333}
+.dream-scene{display:none}
+
 .dream-layer{position:absolute;inset:0;pointer-events:none}
 .dream-layer--mist{background:radial-gradient(ellipse at 78% 48%,#42316f88 0%,transparent 47%),radial-gradient(ellipse at 20% 82%,#263f7588 0%,transparent 50%)}
 .dream-layer--fragments{background:radial-gradient(ellipse at 22% 18%,#7777bc44 0%,transparent 23%),radial-gradient(ellipse at 87% 80%,#8a5ca44a 0%,transparent 24%)}
@@ -89,9 +96,8 @@ html[data-mode=personal] .dream-scene{height:clamp(105px,16vw,165px);position:re
 html[data-mode=personal] .article-body a{color:var(--link)}
 @media(min-width:800px){
  .home-layout{grid-template-columns:minmax(220px,.84fr) minmax(0,1.65fr);gap:32px}
- html[data-mode=academic] .home-profile{border-right:1px solid var(--rule);padding-right:24px;min-height:340px}
+ .home-profile{min-height:340px}
  .home-profile .portrait{width:136px}
- html[data-mode=personal] .home-profile .portrait{width:112px}
 }
 @media(max-width:799px){.home-content{margin-top:22px}.home-content>.home-section:first-child{margin-top:0}.home-profile .intro{flex-direction:column}}
 @media(max-width:400px){main{padding-inline:16px}}
@@ -106,7 +112,7 @@ html[data-mode=personal] .article-body a{color:var(--link)}
 .dream-layer--art svg{display:block}
 .dream-layer--art{background-image:var(--dream-art,none)}
 .character-slot{background-image:var(--character-art,none);background-size:contain;background-repeat:no-repeat;background-position:right bottom}
-html[data-mode=academic] .home-profile .bio{max-width:300px}
+.home-profile .bio{max-width:300px}
 @media(prefers-reduced-motion:reduce){.dream-layer{animation:none}}
 
 /* Hard-edged color bands, not blended gradients. Academic titles use one
@@ -166,7 +172,9 @@ html[data-wake-phase=out],html[data-wake-phase=hold-in]{
  --rose-surface:#8a8b95;--peach-surface:#8e8794;--lavender-surface:#898b99;
 }
 html[data-wake-phase],html[data-wake-phase] *,html[data-wake-phase] *::before,html[data-wake-phase] *::after{transition:none!important;animation:none!important}
-html[data-wake-phase=out] .home-profile{background-color:rgba(143,125,177,.12)}
+/* Match the actual profile panel at the shared midpoint, too. */
+html[data-mode=personal][data-wake-phase=out] .home-profile,
+html[data-mode=academic][data-wake-phase=hold-in] .home-profile{background-color:#8a8399;border-right-color:var(--rule)}
 html[data-wake-phase=out] .dream-scene{background-color:var(--page)}
 html[data-wake-phase=out] .dream-layer{opacity:.42}
 html[data-wake-phase=out] .dream-caption,html[data-wake-phase=out] .site-mark{color:var(--muted)}
