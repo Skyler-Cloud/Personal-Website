@@ -46,7 +46,19 @@ assert.match(academicHome,/data-astro-prefetch="viewport"/);
 const sourceAssets=resolve('content/assets');
 const publishedAssets=join(root,'assets');
 const sourcePaths=(await walk(sourceAssets)).map(p=>relative(sourceAssets,p)).sort();
+const generatedPdfPaths=data.posts.filter(p=>p.latex&&!p.draft&&p.latexPdf).map(p=>'latex/'+p.id+'.pdf');
 const publishedPaths=(await walk(publishedAssets)).map(p=>relative(publishedAssets,p)).sort();
-assert.deepEqual(publishedPaths,sourcePaths,'Published assets must match content/assets exactly');
+const generatedImages=[];
+for(const p of data.posts.filter(p=>p.latex&&!p.draft)){
+  const fragment=await readFile(resolve('apps/web/.generated/latex',p.id+'.html'),'utf8');
+  assert.ok(fragment.trim(),'Empty LaTeX HTML: '+p.id);
+  for(const m of fragment.matchAll(/src="assets\/(latex\/[^"]+)"/g))generatedImages.push(m[1]);
+  for(const mode of postModes(data,p)){
+    const html=await readFile(join(root,mode,'writing',p.id,'index.html'),'utf8');
+    assert.ok(html.includes('class="latex-html"'),'Missing inline LaTeX document: '+p.id);
+  }
+}
+assert.deepEqual(publishedPaths,[...new Set([...sourcePaths,...generatedPdfPaths,...generatedImages])].sort(),'Published assets must match content and generated LaTeX assets');
+for(const p of generatedPdfPaths)assert.equal((await readFile(join(publishedAssets,p))).subarray(0,5).toString(),'%PDF-','Invalid generated PDF: '+p);
 for(const p of sourcePaths)assert.deepEqual(await readFile(join(publishedAssets,p)),await readFile(join(sourceAssets,p)),'Changed asset bytes: '+p);
 console.log('Content asset mirror verified: '+sourcePaths.length+' files');

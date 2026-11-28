@@ -41,6 +41,8 @@ with tempfile.TemporaryDirectory() as temp:
                     nav = page.get_by_role("navigation", name="Website section")
                     navigate("Personal", "personal/", nav)
                     expect(page.locator("html")).to_have_attribute("data-mode", "personal")
+                    assert page.locator("html").get_attribute("data-dream-frame") is None
+                    assert page.locator("html").get_attribute("data-wake-phase") is None
                     assert page.locator(".home-layout").evaluate("(el)=>getComputedStyle(el).gridTemplateColumns.split(' ').length") == 1
                     assert page.locator("h1").evaluate("(el)=>parseFloat(getComputedStyle(el).fontSize)") <= 38
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
@@ -82,6 +84,96 @@ with tempfile.TemporaryDirectory() as temp:
                         print("WebKit reported the expected reduced-motion transition abort")
                     assert not unexpected, unexpected
                     page.close()
+                    motion = browser.new_page(viewport={"width":1280,"height":900}, reduced_motion="no-preference")
+                    motion.goto(url)
+                    motion.wait_for_load_state("networkidle")
+                    expect(motion.locator(".home-profile")).to_be_visible()
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).borderRightWidth") == "1px"
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(240, 239, 237)"
+                    # Profile anchors must match at both responsive widths.
+                    geometry = browser.new_page(java_script_enabled=False)
+                    for width in (390, 1280):
+                        geometry.set_viewport_size({"width":width,"height":900})
+                        snapshots = []
+                        for mode in ("academic", "personal"):
+                            geometry.goto(url+mode+"/")
+                            geometry.evaluate("document.fonts.ready")
+                            snapshots.append(geometry.evaluate("""() => Object.fromEntries(['.home-profile .masthead h1','.portrait-stage','.home-profile .bio','.home-content'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,[r.x,r.y,r.width,r.height]]}))"""))
+                        for selector in snapshots[0]:
+                            # Different bio lengths and featured content can affect
+                            # height, but not their top-left position or width.
+                            fields = (0,1,2,3) if selector in (".home-profile .masthead h1", ".portrait-stage") else (0,1,2)
+                            if width < 800 and selector == ".home-content":
+                                # Stacked content follows the variable-length intro.
+                                fields = (0,2)
+                            assert all(abs(snapshots[0][selector][i]-snapshots[1][selector][i])<1 for i in fields), (width,selector,snapshots)
+                    geometry.close()
+                    # Observe the actual outgoing and incoming DOM states.
+                    motion.evaluate("""window.__frames=[];window.__wake=[];new MutationObserver(()=>{const r=document.documentElement,d=r.dataset;if(d.dreamFrame)window.__frames.push([d.mode,d.dreamFrame,document.querySelectorAll(".glitch-word").length]);if(d.wakePhase)window.__wake.push([d.mode,d.wakePhase,performance.now()]);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-dream-frame','data-wake-phase','data-mode']})""")
+                    link = motion.locator(".writing-entry h3 a").first
+                    bands = link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')")
+                    assert bands.count("#")==3
+                    link.hover()
+                    ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
+                    assert ink in bands
+                    motion.locator(".writing-entry .properties").first.hover()
+                    link.hover()
+                    next_ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
+                    assert next_ink != ink and next_ink in bands
+                    motion.mouse.move(2,2)
+                    link.hover()
+                    third_ink = link.evaluate("(el)=>el.style.getPropertyValue('--hover-color')")
+                    assert len({ink,next_ink,third_ink})==3
+                    assert link.evaluate("(el)=>el.style.getPropertyValue('--hover-bands')") == bands
+                    assert link.evaluate("(el)=>getComputedStyle(el).backgroundImage") == "none"
+                    motion.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal",exact=True).click()
+                    motion.wait_for_function("window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
+                    motion.wait_for_function("!document.documentElement.hasAttribute('data-dream-frame')")
+                    assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1') && window.__frames.some(x=>x[0]==='personal'&&x[1]==='2')")
+                    assert motion.evaluate("window.__frames.some(x=>x[0]==='academic'&&x[1]==='1'&&x[2]>0)")
+                    assert motion.locator(".glitch-word").count() == 0
+                    assert motion.evaluate("window.__frames.every(x=>x[1]!=='3')")
+                    assert motion.locator(".portrait-flip-layer").count() == 0
+                    expect(motion.locator(".dream-scene")).to_be_hidden()
+                    assert motion.locator(".home-profile").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgba(99, 75, 151, 0.29)"
+                    personal_link = motion.locator(".writing-entry h3 a").first
+                    personal_row = personal_link.locator("xpath=ancestor::article")
+                    motion.mouse.move(2,2)
+                    row_before = personal_row.bounding_box()
+                    personal_link.hover()
+                    motion.wait_for_function("getComputedStyle(document.querySelector('.writing-entry:hover .dream-entry-content')).transform !== 'none'")
+                    assert personal_row.bounding_box() == row_before
+                    assert personal_row.locator(".dream-entry-content").evaluate("(el)=>getComputedStyle(el).transform") != "none"
+                    expect(personal_link).to_have_css("color","rgb(255, 255, 255)")
+                    expect(personal_link).to_have_css("background-image","none")
+                    expect(personal_row.locator(".dream-entry-frame")).to_have_css("opacity","1")
+                    colors = personal_row.evaluate("(el)=>[el.style.getPropertyValue('--dream-frame-back'),el.style.getPropertyValue('--dream-frame-front')]")
+                    assert all(colors) and colors[0]!=colors[1]
+                    for part in ("back","front"):
+                        shape = personal_row.locator(".dream-entry-frame-"+part)
+                        assert shape.evaluate("(el)=>getComputedStyle(el).fill") != "none"
+                        expect(shape).to_have_css("stroke","none")
+                    motion.mouse.move(2,2)
+                    personal_link.hover()
+                    assert personal_row.evaluate("(el)=>[el.style.getPropertyValue('--dream-frame-back'),el.style.getPropertyValue('--dream-frame-front')]") != colors
+                    for el in personal_row.locator(".meta, .summary, .rating").all():
+                        expect(el).to_have_css("color","rgb(255, 255, 255)")
+                    motion.evaluate("""window.__wakeMidpoint=null;document.addEventListener('astro:after-swap',()=>{window.__wakeMidpoint={mode:document.documentElement.dataset.mode,phase:document.documentElement.dataset.wakePhase,at:performance.now()}})""")
+                    motion.get_by_role("navigation",name="Website section").get_by_role("link",name="Academic",exact=True).click()
+                    motion.wait_for_function("window.__wake.some(x=>x[0]==='academic'&&x[1]==='in')")
+                    assert motion.evaluate("window.__wake.some(x=>x[0]==='personal'&&x[1]==='out')")
+                    assert motion.evaluate("window.__wakeMidpoint.mode") == "academic"
+                    assert motion.evaluate("window.__wakeMidpoint.phase") == "in"
+                    # Timing includes scheduling overhead; detect an unintended
+                    # several-hundred-ms hold, allowing slower CI browsers.
+                    wake_elapsed = motion.evaluate("window.__wake.find(x=>x[0]==='academic'&&x[1]==='in')[2]-window.__wake.find(x=>x[0]==='personal'&&x[1]==='out')[2]")
+                    assert wake_elapsed < 500, f"Wake cut delayed: {wake_elapsed:.0f} ms"
+                    assert motion.locator(".portrait").evaluate("(el)=>getComputedStyle(el).opacity") == "1"
+                    motion.wait_for_function("!document.documentElement.hasAttribute('data-wake-phase')")
+                    expect(motion.locator("html")).to_have_attribute("data-mode","academic")
+                    assert motion.locator("body").evaluate("(el)=>getComputedStyle(el).backgroundColor") == "rgb(255, 255, 255)"
+                    assert motion.locator(".portrait-flip-layer").count() == 0
+                    motion.close()
                     plain = browser.new_page(java_script_enabled=False)
                     plain.goto(url)
                     plain.get_by_role("navigation", name="Website section").get_by_role("link", name="Personal", exact=True).click()

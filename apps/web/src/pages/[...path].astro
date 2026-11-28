@@ -1,10 +1,7 @@
 ---
-import '@fontsource/play/700.css';
-import '@fontsource/nunito/400.css';
-import '@fontsource/nunito/600.css';
-import '@fontsource/nunito/700.css';
 import {ClientRouter} from 'astro:transitions';
-import {existsSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {resolve,dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {parse} from 'yaml';
@@ -12,6 +9,7 @@ import MarkdownIt from 'markdown-it';
 import texmath from 'markdown-it-texmath';
 import katex from 'katex';
 import {FileRepository} from '../../../../packages/storage/files.ts';
+import {safeAsset} from '../../../../packages/core/index.ts';
 import {renderPages,renderFooter} from '../../../../packages/frontend/render.ts';
 import {tokenCSS} from '../../../../packages/frontend/tokens.ts';
 export async function getStaticPaths(){
@@ -23,11 +21,24 @@ export async function getStaticPaths(){
   const data=await new FileRepository(root,parse).load();
   const md=new MarkdownIt({html:false,linkify:true,typographer:false}).use(texmath,{engine:katex,delimiters:'dollars',katexOptions:{throwOnError:true,trust:false,strict:'warn'}});
   const base=import.meta.env.BASE_URL.endsWith('/')?import.meta.env.BASE_URL:import.meta.env.BASE_URL+'/';
-  return renderPages(data,{base,markdown:s=>md.render(s)}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
+  // Obsidian relative attachments resolve against the content vault, not the article URL.
+  for(const [rule,attr] of [['image','src'],['link_open','href']] as const){
+    const original=md.renderer.rules[rule];
+    md.renderer.rules[rule]=(tokens,idx,opts,env,self)=>{
+      const token=tokens[idx], value=token.attrGet(attr);
+      if(value){
+        const path=value.replace(/^\.\.\//,'').replace(/^\.\//,'');
+        if(safeAsset(path))token.attrSet(attr,base+path);
+      }
+      return original?original(tokens,idx,opts,env,self):self.renderToken(tokens,idx,opts);
+    };
+  }
+  const revision=createHash('sha256').update(readFileSync(join(project,'apps/web/public/styles/site.css'))).update(readFileSync(join(project,'apps/web/public/scripts/site.js'))).digest('hex').slice(0,12);
+  return renderPages(data,{base,markdown:s=>md.render(s),latex:id=>readFileSync(join(project,'apps/web/.generated/latex',id+'.html'),'utf8').replace(/src="assets\/latex\//g,'src="'+base+'assets/latex/')}).map(p=>({params:{path:p.path||undefined},props:{page:p,site:data.site,base,revision,tokens:tokenCSS(pathToFileURL(join(project,'design/tokens.json')))}}));
 }
-const {page,site,base,tokens:css}=Astro.props;
+const {page,site,base,revision,tokens:css}=Astro.props;
 const hasMath=/<span\s+class="katex(?:\s|")/.test(page.html);
 const title=page.path?`${page.title} · ${site.name}`:site.name;
 ---
 <!doctype html>
-<html lang="en" data-mode={page.mode} transition:animate="none"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>{title}</title><meta name="description" content={page.description}/><style is:inline set:html={css}></style><link rel="canonical" href={Astro.site ? new URL(base+(page.canonicalPath??page.path)+(page.canonicalPath??page.path?'/':''),Astro.site).href : undefined}/><link rel="stylesheet" href={base+'styles/site.css'}/>{hasMath && <link rel="stylesheet" href={base+'vendor/katex/katex.min.css'}/>}<ClientRouter fallback="swap"/></head><body><a class="skip-link" href="#main">Skip to content</a><main id="main"><Fragment set:html={page.html}/><Fragment set:html={renderFooter({base,mode:page.mode,markdown:s=>s})}/></main><script is:inline src={base+'scripts/site.js'}></script></body></html>
+<html lang="en" data-mode={page.mode} transition:animate="none"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>{title}</title><meta name="description" content={page.description}/><style is:inline set:html={css+"html{background-color:var(--page)}"}></style><link rel="canonical" href={Astro.site ? new URL(base+(page.canonicalPath??page.path)+(page.canonicalPath??page.path?'/':''),Astro.site).href : undefined}/><link rel="stylesheet" href={base+'styles/site.css?v='+revision}/>{hasMath && <link rel="stylesheet" href={base+'vendor/katex/katex.min.css'}/>}<ClientRouter fallback="swap"/></head><body><a class="skip-link" href="#main">Skip to content</a><main id="main"><Fragment set:html={page.html}/><Fragment set:html={renderFooter({base,mode:page.mode,markdown:s=>s})}/></main><script is:inline src={base+'scripts/site.js?v='+revision}></script></body></html>
