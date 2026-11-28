@@ -221,10 +221,15 @@ html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing
 .dream-entry-content{position:relative;display:grid;gap:inherit;min-width:0;isolation:isolate;transform-origin:center;transition:transform 150ms cubic-bezier(.2,.75,.25,1)}
 .dream-entry-content .dream-entry-frame{inset:-9px -7px -8px;height:calc(100% + 17px);transition:opacity 100ms ease-out,filter 150ms ease-out}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within){z-index:2}
-html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content{transform:translateY(-2px) rotate(-.8deg) scale(1.018)}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content{transform:translateY(-2px) rotate(1.4deg) scale(1.018)}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-frame{filter:drop-shadow(2px 5px 3px rgba(0,0,0,.32))}
 html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content :is(h3,a,p,span,strong,em,small,time){text-shadow:0 1px 1px #0003}
 @media(prefers-reduced-motion:reduce),(forced-colors:active){
  .dream-entry-content{transition:none!important}
  html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-content{transform:none}
 }
+
+/* Text follows the sloping upper/front paper edge independently of the stack. */
+.dream-entry-text{display:grid;gap:inherit;min-width:0;transform-origin:center;transition:transform 150ms cubic-bezier(.2,.75,.25,1)}
+html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-text{transform:rotate(.7deg)}
+@media(prefers-reduced-motion:reduce),(forced-colors:active){.dream-entry-text{transition:none!important}html[data-mode=personal]:not([data-dream-frame]):not([data-wake-phase]) .writing-entry:is(:hover,:focus-within) .dream-entry-text{transform:none}}
